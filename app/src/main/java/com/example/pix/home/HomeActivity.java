@@ -1,41 +1,72 @@
 package com.example.pix.home;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
+import android.graphics.Color;
 import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.fragments.ChatsFragment;
 import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.fragments.ProfileFragment;
+import com.example.pix.login.LoginActivity;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
-    float x1,x2;
+    SpotifyAppRemote mSpotifyAppRemote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
+
+        // Setup the PagerView and the colors we want for each tab
+        PagerTabStrip pagerTabStrip = findViewById(R.id.pager_header);
+        pagerTabStrip.setDrawFullUnderline(false);
+
         List<Fragment> fragments = new ArrayList<>();
+        List<String> fragmentNames = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
         fragments.add(new ChatsFragment());
+        fragmentNames.add("Chats");
+        colors.add(Color.BLUE);
         fragments.add(new ComposeFragment());
+        fragmentNames.add("Compose");
+        colors.add(Color.GREEN);
         fragments.add(new ProfileFragment());
+        fragmentNames.add("Profile");
+        colors.add(Color.YELLOW);
+
 
         ViewPager viewPager = findViewById(R.id.vpPager);
-        PagerAdapter pagerAdapter = new PagerAdapter(getSupportFragmentManager(), fragments);
+        // Link the colors to each page
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                pagerTabStrip.setTabIndicatorColor(colors.get(position));
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        PagerAdapter pagerAdapter = new PagerAdapter(getSupportFragmentManager(), fragments, fragmentNames);
 
         viewPager.setAdapter(pagerAdapter);
 

@@ -13,13 +13,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.pix.R;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.spotify.android.appremote.api.UserApi;
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.LoginActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ChatsFragment extends Fragment {
-
-    int i = 0;
 
     public ChatsFragment() {
         // Required empty public constructor
