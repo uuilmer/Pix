@@ -5,31 +5,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".spotifyAuth.SpotifyAuthActivity">
+    tools:context=".login.LoginActivity">
 
-    <EditText
-        android:id="@+id/entered_username"
+    <LinearLayout
+        android:id="@+id/parse_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username" />
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="200sp"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"
+            android:text="Login to Pix"
+            android:textSize="23sp" />
+        <EditText
+            android:id="@+id/entered_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username" />
 
-    <EditText
-        android:id="@+id/entered_password"
+        <EditText
+            android:id="@+id/entered_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="Password" />
+
+
+        <Button
+            android:id="@+id/parse_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Login" />
+
+        <Button
+            android:id="@+id/parse_signup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Sign Up" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/spotify_auth_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password" />
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="" />
-
-    <ImageView
-        android:id="@+id/auth_spotify"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/spotify"/>
-
+        <TextView
+            android:layout_width="200sp"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"
+            android:text="Authenticate with Spotify"
+            android:textSize="23sp" />
+        <ImageView
+            android:id="@+id/auth_spotify"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/spotify"/>
+    </LinearLayout>
 
 </LinearLayout>

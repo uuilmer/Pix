@@ -11,9 +11,9 @@ public class ParseApplication extends Application {
         super.onCreate();
         //ParseObject.registerSubclass(Post.class);
         Parse.initialize(new Parse.Configuration.Builder(this)
-                .applicationId("wilmer-parstagram") // should correspond to APP_ID env variable
+                .applicationId("wilmer-pix") // should correspond to APP_ID env variable
                 .clientKey("37DD5A0741")  // set explicitly unless clientKey is explicitly configured on Parse server
-                .server("https://wilmer-parstagram.herokuapp.com/parse/").build());
+                .server("https://wilmer-pix.herokuapp.com/parse/").build());
     }
 }
 

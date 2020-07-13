@@ -1,4 +1,4 @@
-package com.example.pix.composeSnap;
+package com.example.pix.home;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,11 +6,12 @@ import android.os.Bundle;
 
 import com.example.pix.R;
 
-public class ComposeSnapActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_compose_snap);
+        setContentView(R.layout.activity_home);
+
     }
 }
