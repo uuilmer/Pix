@@ -26,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     private boolean loggedIn = false;
     private boolean authenticated = false;
 
+    // When one of (spotify, parse) is done, check if both are done
     private void checkIfDone(){
         if(loggedIn && authenticated){
             Intent i = new Intent(LoginActivity.this, HomeActivity.class);
