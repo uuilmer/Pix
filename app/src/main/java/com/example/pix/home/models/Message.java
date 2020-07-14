@@ -9,33 +9,34 @@ import java.util.Date;
 @ParseClassName("Message")
 public class Message extends ParseObject {
 
-    public Message(){}
+    public Message() {
+    }
 
-    public ParseUser getFrom(){
+    public ParseUser getFrom() {
         return getParseUser("from");
     }
 
-    public void setFrom(ParseUser user){
+    public void setFrom(ParseUser user) {
         put("from", user);
     }
 
-    public ParseUser getTo(){
+    public ParseUser getTo() {
         return getParseUser("to");
     }
 
-    public void setTo(ParseUser user){
+    public void setTo(ParseUser user) {
         put("to", user);
     }
 
-    public Date getTime(){
+    public Date getTime() {
         return getCreatedAt();
     }
 
-    public String getText(){
+    public String getText() {
         return getString("text");
     }
 
-    public void setText(String text){
+    public void setText(String text) {
         put("text", text);
     }
 }

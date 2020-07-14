@@ -8,8 +8,8 @@
         android:id="@+id/chats_profile"
         android:layout_width="60dp"
         android:layout_height="match_parent"
-        app:srcCompat="@drawable/spotify"
-        android:layout_margin="10dp"/>
+        android:layout_margin="10dp"
+        app:srcCompat="@drawable/spotify" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,22 +23,26 @@
             android:fontFamily="sans-serif-medium"
             android:text="wilmie"
             android:textSize="25dp" />
+
         <LinearLayout
+            android:id="@+id/chats_select"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <TextView
                 android:id="@+id/chats_status"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:gravity="center"
                 android:layout_marginRight="10dp"
-                android:text="Read"/>
+                android:gravity="center"
+                android:text="Read" />
+
             <TextView
                 android:id="@+id/chats_time"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:gravity="center"
                 android:layout_marginRight="10dp"
+                android:gravity="center"
                 android:text="· 8m" />
 
             <TextView

@@ -20,6 +20,18 @@ public class Chat extends ParseObject {
     public Chat() {
     }
 
+    public static Chat getChat(String chatId) {
+        ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
+        q.whereEqualTo("objectId", chatId);
+        try {
+            return q.getFirst();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.e("Error", "Failed getting Chat from objectId", e);
+        }
+        return null;
+    }
+
     // Combine Chats where this user is the sender OR ones where they are recipient
     public static List<Chat> getChats(ParseUser user, int page) throws ParseException {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
@@ -58,15 +70,15 @@ public class Chat extends ParseObject {
         res.findInBackground(handler);
     }
 
-    public int getStatus(){
+    public int getStatus() {
         return getInt("status");
     }
 
-    public String getStatusText() throws ParseException { // Take into account that for one user its delivered and opened and for other its new chat and opened
+    public String getStatusText() { // Take into account that for one user its delivered and opened and for other its new chat and opened
         // Maybe make a new column to keep track of this status as a number?
         int status = getInt("status");
         Message latestMessage = getFirstMessage();
-        if(latestMessage == null)
+        if (latestMessage == null)
             return "New chat!";
         boolean userSentThis = latestMessage.getFrom().equals(ParseUser.getCurrentUser());
         // If the current user sent this message, return either opened or delivered
@@ -125,7 +137,7 @@ public class Chat extends ParseObject {
         q.setLimit(5 * page + 5);
         q.setSkip(5 * page);
 
-        if(this.getStatus() == 1) {
+        if (this.getStatus() == 1) {
             this.setStatus(0);
             this.save();
         }
