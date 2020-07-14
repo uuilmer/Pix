@@ -1,4 +1,4 @@
-package com.example.pix.home;
+package com.example.pix.home.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -14,6 +14,7 @@ import com.example.pix.home.fragments.ChatsFragment;
 import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.fragments.ProfileFragment;
 import com.example.pix.login.LoginActivity;
+import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class HomeActivity extends AppCompatActivity {
         PagerAdapter pagerAdapter = new PagerAdapter(getSupportFragmentManager(), fragments, fragmentNames);
 
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(1);
 
 //        LinearLayout homeContainer = findViewById(R.id.home_container);
 
