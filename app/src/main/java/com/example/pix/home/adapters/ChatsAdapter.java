@@ -1,6 +1,8 @@
 package com.example.pix.home.adapters;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,20 +63,28 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             this.tvPix = itemView.findViewById(R.id.chats_pix);
         }
         public void bind(Chat chat){
-            Glide.with(context)
-                    .load(
-                            chat.getFriend(ParseUser.getCurrentUser())
-                                    .getParseFile("profile")
-                                    .getUrl())
-                    .into(this.ivProfile);
-            this.tvName.setText("" + chat.getFriend(ParseUser.getCurrentUser()).getUsername());
             this.tvPix.setText("" + chat.getPix());
-            this.tvStatus.setText("" + chat.getStatus());
             try {
-                Message recent = chat.getMessages(0).get(0);
-                this.tvTime.setText("" + recent.getTime().toString());
+                Log.i("Yo", "cero");
+                ParseUser friend = chat.getFriend(ParseUser.getCurrentUser()).fetchIfNeeded();
+                Log.i("Yo", "uno");
+                Glide.with(context)
+                        .load(friend
+                                .getParseFile("profile")
+                                .getUrl())
+                        .circleCrop()
+                        .into(this.ivProfile);
+                Log.i("Yo", "one");
+                this.tvName.setText("" + friend.getUsername());
+                Log.i("Yo", "two");
+                this.tvStatus.setText("" + chat.getStatusText());
+                Log.i("Yo", "here");
+                Message recent = chat.getFirstMessage();
+                Log.i("Yo", "dos");
+                this.tvTime.setText("" + (recent != null ? recent.getTime().toString() : ""));
             } catch (ParseException e) {
                 e.printStackTrace();
+                Log.e("Error", "Failed getting status text and/or time", e);
             }
         }
     }

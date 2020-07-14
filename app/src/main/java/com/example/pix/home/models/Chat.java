@@ -1,67 +1,122 @@
 package com.example.pix.home.models;
 
+import android.util.Log;
+
+import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ParseClassName("Chat")
 public class Chat extends ParseObject {
-    public Chat(){}
 
-    // Combine Chats where this user is the sender and ones where they are recipient
+    public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+
+    public Chat() {
+    }
+
+    // Combine Chats where this user is the sender OR ones where they are recipient
     public static List<Chat> getChats(ParseUser user, int page) throws ParseException {
+        List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo("userOne", user);
-        q.orderByDescending("updatedAt");
-        q.setLimit(5 * page + 5);
-        q.setSkip(5 * page);
-        List<Chat> caseOne = q.find();
+        queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo("userTwo", user);
-        p.orderByDescending("updatedAt");
-        p.setLimit(5 * page + 5);
-        p.setSkip(5 * page);
-        caseOne.addAll(p.find());
-        return caseOne;
+        queries.add(p);
+
+        // Combine the queries as an OR
+        ParseQuery<Chat> res = ParseQuery.or(queries);
+
+        res.setLimit(5 * page + 5);
+        res.setSkip(5 * page);
+        return res.find();
     }
 
-    public String getStatus(){ // Take into account that for one user its delivered and opened and for other its new chat and opened
+    // Combine Chats where this user is the sender OR ones where they are recipient, but in background
+    public static void getChatsInBackground(ParseUser user, int page, FindCallback<Chat> handler) throws ParseException {
+        List<ParseQuery<Chat>> queries = new ArrayList<>();
+        ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
+        q.whereEqualTo("userOne", user);
+        queries.add(q);
+
+        ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
+        p.whereEqualTo("userTwo", user);
+        queries.add(p);
+
+        // Combine the queries as an OR
+        ParseQuery<Chat> res = ParseQuery.or(queries);
+
+        res.setLimit(5 * page + 5);
+        res.setSkip(5 * page);
+        res.findInBackground(handler);
+    }
+
+    public int getStatus(){
+        return getInt("status");
+    }
+
+    public String getStatusText() throws ParseException { // Take into account that for one user its delivered and opened and for other its new chat and opened
         // Maybe make a new column to keep track of this status as a number?
-        return getString("status");
+        int status = getInt("status");
+        Message latestMessage = getFirstMessage();
+        if(latestMessage == null)
+            return "New chat!";
+        boolean userSentThis = latestMessage.getFrom().equals(ParseUser.getCurrentUser());
+        // If the current user sent this message, return either opened or delivered
+        if (userSentThis)
+            return statuses[1 + status];
+        // Else return opened or new chat
+        return statuses[1 - status];
     }
 
-    public void setStatus(String status){
+    public void setStatus(int status) {
         put("status", status);
     }
 
-    public void setUser(ParseUser user){
+    public void setUser(ParseUser user) {
         put("userOne", user);
     }
 
     // Return the User that is not the current User as the "friend"
-    public ParseUser getFriend(ParseUser currUser){
+    public ParseUser getFriend(ParseUser currUser) {
         ParseUser one = getParseUser("userOne");
         ParseUser two = getParseUser("userTwo");
-        return one.getObjectId() == currUser.getObjectId() ? two : one;
+        return one.equals(currUser) ? one : two;
     }
 
-    public void setFriend(ParseUser friend){
+    public void setFriend(ParseUser friend) {
         put("userTwo", friend);
     }
 
-    public int getPix(){
+    public int getPix() {
         return getInt("pix");
     }
 
-    public void setPix(int pix){
+    public void setPix(int pix) {
         put("pix", pix);
     }
 
+    // This method is for the purposes of a chat preview (Doesn't edit read receipts)
+    public Message getFirstMessage() {
+        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+        q.include("chat");
+        q.whereEqualTo("chat", this);
+        q.orderByDescending("createdAt");
+        try {
+            return q.getFirst();
+        } catch (ParseException ignored) {
+        }
+        return null;
+    }
+
+    // This is for the purposes of entering a chat (Edits read receipts)
     public List<Message> getMessages(int page) throws ParseException {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
         q.include("chat");
@@ -69,10 +124,12 @@ public class Chat extends ParseObject {
         q.orderByDescending("createdAt");
         q.setLimit(5 * page + 5);
         q.setSkip(5 * page);
+
+        if(this.getStatus() == 1) {
+            this.setStatus(0);
+            this.save();
+        }
+
         return q.find();
     }
 }
-
-//this.ivProfile.setImageResource(((ParseFile)chat.getFriendImage()).getUrl());
-//this.tvName.setText("" + chat.getFriend.getUsername());
-//this.tvPix.setText(chat.getPix());

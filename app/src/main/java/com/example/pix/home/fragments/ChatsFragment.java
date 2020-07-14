@@ -19,6 +19,7 @@ import com.example.pix.R;
 import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
@@ -56,10 +57,10 @@ public class ChatsFragment extends Fragment {
         // Get a List of this User's Chats and create an Adapter for it
         try {
             List<Chat> chats = Chat.getChats(ParseUser.getCurrentUser(), 0);
-            ChatsAdapter chatsAdapter = new ChatsAdapter(view.getContext(), chats);
+            ChatsAdapter chatsAdapter = new ChatsAdapter(getContext(), chats);
             rvChats.setAdapter(chatsAdapter);
 
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(view.getContext());
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
             rvChats.setLayoutManager(linearLayoutManager);
 
             // When we scroll, get the next batch of chats
@@ -67,8 +68,13 @@ public class ChatsFragment extends Fragment {
                 @Override
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                     try {
-                        chats.addAll(Chat.getChats(ParseUser.getCurrentUser(), page));
-                        chatsAdapter.notifyDataSetChanged();
+                        Chat.getChatsInBackground(ParseUser.getCurrentUser(), page, new FindCallback<Chat>() {
+                            @Override
+                            public void done(List<Chat> objects, ParseException e) {
+                                chats.addAll(objects);
+                                chatsAdapter.notifyDataSetChanged();
+                            }
+                        });
                     } catch (ParseException e) {
                         e.printStackTrace();
                         Log.e("Error", "Failed Adding more Chats", e);
