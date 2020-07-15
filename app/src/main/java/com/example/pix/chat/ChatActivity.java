@@ -75,6 +75,8 @@ public class ChatActivity extends AppCompatActivity {
         ivPictures = findViewById(R.id.chat_pictures);
         ivNewPic = findViewById(R.id.chat_image);
 
+        ivBack.setOnClickListener(view -> finish());
+
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
         // When we click the plus, go to add a pic
