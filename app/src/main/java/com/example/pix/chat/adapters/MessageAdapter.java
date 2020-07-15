@@ -87,7 +87,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 //            }
             ParseUser from = message.getFrom();
             try {
-                this.name.setText("" + (from.fetchIfNeeded().equals(ParseUser.getCurrentUser()) ? "Me" : from.fetchIfNeeded().getUsername()));
+                this.name.setText("" + (from.fetchIfNeeded().getObjectId().equals(ParseUser.getCurrentUser().getObjectId()) ? "Me" : from.fetchIfNeeded().getUsername()));
             } catch (ParseException e) {
                 e.printStackTrace();
             }

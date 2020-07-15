@@ -80,7 +80,7 @@ public class Chat extends ParseObject {
         Message latestMessage = getFirstMessage();
         if (latestMessage == null)
             return "New chat!";
-        boolean userSentThis = latestMessage.getFrom().equals(ParseUser.getCurrentUser());
+        boolean userSentThis = latestMessage.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
         // If the current user sent this message, return either opened or delivered
         if (userSentThis)
             return statuses[1 + status];
@@ -100,7 +100,7 @@ public class Chat extends ParseObject {
     public ParseUser getFriend(ParseUser currUser) {
         ParseUser one = getParseUser("userOne");
         ParseUser two = getParseUser("userTwo");
-        return one.equals(currUser) ? one : two;
+        return one.getObjectId().equals(currUser.getObjectId()) ? two : one;
     }
 
     public void setFriend(ParseUser friend) {
@@ -129,7 +129,7 @@ public class Chat extends ParseObject {
     }
 
     // This is for the purposes of entering a chat (Edits read receipts)
-    public List<Message> getMessages(int page) throws ParseException {
+    public List<Message> getMessages(int page, ParseUser requester) throws ParseException {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
         q.include("chat");
         q.whereEqualTo("chat", this);
@@ -137,16 +137,20 @@ public class Chat extends ParseObject {
         q.setLimit(20 * page + 20);
         q.setSkip(20 * page);
 
+        // If the user that requested these Messages is the one who they were sent to, mark as read
         if (this.getStatus() == 1) {
-            this.setStatus(0);
-            this.save();
+            ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
+            if(recipient.getObjectId().equals(requester.getObjectId())) {
+                this.setStatus(0);
+                this.save();
+            }
         }
 
         return q.find();
     }
 
     // This is for the purposes of entering a chat (Edits read receipts), but in background
-    public void getMessagesInBackground(int page, FindCallback<Message> handler) throws ParseException {
+    public void getMessagesInBackground(int page, ParseUser requester, FindCallback<Message> handler) throws ParseException {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
         q.include("chat");
         q.whereEqualTo("chat", this);
@@ -155,8 +159,11 @@ public class Chat extends ParseObject {
         q.setSkip(20 * page);
 
         if (this.getStatus() == 1) {
-            this.setStatus(0);
-            this.save();
+            ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
+            if(recipient.getObjectId().equals(requester.getObjectId())) {
+                this.setStatus(0);
+                this.save();
+            }
         }
 
         q.findInBackground(handler);

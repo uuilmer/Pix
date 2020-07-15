@@ -14,6 +14,14 @@ public class Message extends ParseObject {
     public Message() {
     }
 
+    public Chat getChat() {
+        return (Chat) getParseObject("chat");
+    }
+
+    public void setChat(Chat chat) {
+        put("chat", chat);
+    }
+
     public ParseUser getFrom() {
         return getParseUser("from");
     }
@@ -42,10 +50,13 @@ public class Message extends ParseObject {
         put("text", text);
     }
 
-    public ParseFile getPic(){
+    public ParseFile getPic() {
         return getParseFile("pic");
     }
-    public void setPic(File pic){
-        put("pic", pic);
+
+    public void setPic(File pic) {
+        System.out.println("one");
+        put("pic", new ParseFile(pic));
+        System.out.println("two");
     }
 }
