@@ -54,9 +54,7 @@ public class Message extends ParseObject {
         return getParseFile("pic");
     }
 
-    public void setPic(File pic) {
-        System.out.println("one");
-        put("pic", new ParseFile(pic));
-        System.out.println("two");
+    public void setPic(ParseFile pic) {
+        put("pic", pic);
     }
 }

@@ -1,15 +1,19 @@
 package com.example.pix.chat;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,58 +21,71 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.adapters.MessageAdapter;
+import com.example.pix.chat.utils.FetchPath;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
-import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
 
     public static final int RESULT_LOAD_IMG = 100;
+    public static final int REQUEST_PERM = 101;
     ImageView ivNewPic;
-    File newPic;
+    ParseFile newPic;
+    MessageAdapter messageAdapter;
+    List<Message> messages;
+    RecyclerView rvMessages;
+    EditText etText;
+    Chat chat;
+    ImageView ivPictures;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERM);
+
         // Use the objectId we passed to get this Chat
         String chatId = getIntent().getStringExtra("chat");
-        Chat chat = Chat.getChat(chatId);
+        chat = Chat.getChat(chatId);
 
 
-        RecyclerView rvMessages = findViewById(R.id.chat_rv);
+        rvMessages = findViewById(R.id.chat_rv);
         ImageView ivProfile = findViewById(R.id.chat_profile);
         TextView tvName = findViewById(R.id.chat_name);
         ImageView ivBack = findViewById(R.id.chat_back);
         ImageView ivCamera = findViewById(R.id.chat_camera);
-        EditText etText = findViewById(R.id.chat_text);
-        ImageView ivPictures = findViewById(R.id.chat_pictures);
+        etText = findViewById(R.id.chat_text);
+        ivPictures = findViewById(R.id.chat_pictures);
         ivNewPic = findViewById(R.id.chat_image);
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
+        // When we click the plus, go to add a pic
         ivPictures.setOnClickListener(view -> {
             Intent i = new Intent(Intent.ACTION_PICK);
             i.setType("image/*");
             startActivityForResult(i, RESULT_LOAD_IMG);
         });
 
-        ParseFile profile = null;
+        // Get this friend's profile pic
+        ParseFile profile;
         try {
             profile = friend.fetchIfNeeded().getParseFile("profile");
             Glide.with(ChatActivity.this).load(profile.getUrl()).circleCrop().into(ivProfile);
@@ -84,8 +101,8 @@ public class ChatActivity extends AppCompatActivity {
         manager.setReverseLayout(true);
 
         try {
-            List<Message> messages = chat.getMessages(0, ParseUser.getCurrentUser());
-            MessageAdapter messageAdapter = new MessageAdapter(ChatActivity.this, messages);
+            messages = chat.getMessages(0, ParseUser.getCurrentUser());
+            messageAdapter = new MessageAdapter(ChatActivity.this, messages);
             rvMessages.setAdapter(messageAdapter);
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
@@ -108,30 +125,26 @@ public class ChatActivity extends AppCompatActivity {
 
             // When we press enter, save this text as a new Message within this Chat and scroll to the latest message
             etText.setOnKeyListener((view, i, keyEvent) -> {
-                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
+                    // Create new message
                     Message newMessage = new Message();
                     newMessage.setText(etText.getText().toString());
                     newMessage.setFrom(ParseUser.getCurrentUser());
                     newMessage.setTo(friend);
-                    if(newPic != null)
-                        newMessage.setPic(newPic);
                     newMessage.setChat(chat);
-                    try {
-                        newMessage.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                messages.add(0, newMessage);
-                                messageAdapter.notifyDataSetChanged();
-                                rvMessages.smoothScrollToPosition(0);
+                    if (newPic != null) {
+                        // Case where we need to save a picture to DB first
+                        newPic.saveInBackground((SaveCallback) e -> {
+                            if (e != null) {
+                                Toast.makeText(ChatActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
+                                return;
                             }
+                            newMessage.setPic(newPic);
+                            saveMessage(newMessage);
                         });
-                        etText.setText("");
-                        chat.setStatus(1);
-                        chat.save();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Log.e("Error", "Failed saving new Message", e);
-                    }
+                    } else
+                        // Case where there is no picture
+                        saveMessage(newMessage);
                     return true;
                 }
                 return false;
@@ -141,23 +154,59 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void saveMessage(Message newMessage) {
+        newMessage.saveInBackground(e -> {
+            if (e != null) {
+                Log.e("Error", "Failed saving message", e);
+                return;
+            }
+            messages.add(0, newMessage);
+            messageAdapter.notifyDataSetChanged();
+            rvMessages.smoothScrollToPosition(0);
+            etText.setText("");
+            chat.setStatus(1);
+            ivNewPic.setImageResource(0);
+            ivNewPic.setVisibility(View.GONE);
+            newPic = null;
+            chat.saveInBackground(e1 -> {
+                if (e1 != null) {
+                    Log.e("Error", "Failed saving chat", e1);
+                    return;
+                }
+            });
+        });
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(resultCode == RESULT_OK){
-            if(requestCode == RESULT_LOAD_IMG){
+        if (resultCode == RESULT_OK) {
+            if (requestCode == RESULT_LOAD_IMG) {
                 try {
                     final Uri imageUri = data.getData();
                     InputStream imageStream = getContentResolver().openInputStream(imageUri);
                     final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                     ivNewPic.setImageBitmap(selectedImage);
                     ivNewPic.setVisibility(View.VISIBLE);
-                    newPic = new File(imageUri.getPath());
-                } catch (FileNotFoundException e) {
+
+                    newPic = new ParseFile(new File(FetchPath.getPath(ChatActivity.this, imageUri)));
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(ChatActivity.this, "You can now send pictures!", Toast.LENGTH_SHORT).show();
+        } else {
+            // INSERT HERE BETTER DISABLING OF SENDING PICS SINCE USER DID NOT ALLOW IT.(MAYBE)
+            ivPictures.setVisibility(View.GONE);
         }
     }
 }
