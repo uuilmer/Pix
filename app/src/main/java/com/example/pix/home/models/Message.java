@@ -1,9 +1,11 @@
 package com.example.pix.home.models;
 
 import com.parse.ParseClassName;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
+import java.io.File;
 import java.util.Date;
 
 @ParseClassName("Message")
@@ -38,5 +40,12 @@ public class Message extends ParseObject {
 
     public void setText(String text) {
         put("text", text);
+    }
+
+    public ParseFile getPic(){
+        return getParseFile("pic");
+    }
+    public void setPic(File pic){
+        put("pic", pic);
     }
 }

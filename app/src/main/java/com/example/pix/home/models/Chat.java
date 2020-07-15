@@ -134,8 +134,8 @@ public class Chat extends ParseObject {
         q.include("chat");
         q.whereEqualTo("chat", this);
         q.orderByDescending("createdAt");
-        q.setLimit(5 * page + 5);
-        q.setSkip(5 * page);
+        q.setLimit(20 * page + 20);
+        q.setSkip(20 * page);
 
         if (this.getStatus() == 1) {
             this.setStatus(0);
@@ -143,5 +143,22 @@ public class Chat extends ParseObject {
         }
 
         return q.find();
+    }
+
+    // This is for the purposes of entering a chat (Edits read receipts), but in background
+    public void getMessagesInBackground(int page, FindCallback<Message> handler) throws ParseException {
+        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+        q.include("chat");
+        q.whereEqualTo("chat", this);
+        q.orderByDescending("createdAt");
+        q.setLimit(20 * page + 20);
+        q.setSkip(20 * page);
+
+        if (this.getStatus() == 1) {
+            this.setStatus(0);
+            this.save();
+        }
+
+        q.findInBackground(handler);
     }
 }
