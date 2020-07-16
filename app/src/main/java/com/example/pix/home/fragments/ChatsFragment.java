@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,7 +49,6 @@ public class ChatsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         TextView tvScore = view.findViewById(R.id.tv_score);
-        SearchView svChats = view.findViewById(R.id.search_user);
         RecyclerView rvChats = view.findViewById(R.id.rv_chats);
 
         // Get a List of this User's Chats and create an Adapter for it

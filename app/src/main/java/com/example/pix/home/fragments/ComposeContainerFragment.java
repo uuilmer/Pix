@@ -41,6 +41,7 @@ public class ComposeContainerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         ComposeFragment composeFrag = (ComposeFragment) this.getChildFragmentManager().findFragmentById(R.id.arFragment);
 
+        // Define the fox mask
         ModelRenderable.builder()
                 .setSource(getContext(), R.raw.fox_face)
                 .build()
@@ -50,6 +51,7 @@ public class ComposeContainerFragment extends Fragment {
                     modelRenderable.setShadowCaster(false);
                     modelRenderable.setShadowReceiver(false);
                 });
+        // Define the face mesh
         Texture.builder()
                 .setSource(getContext(), R.drawable.fox_face_mesh_texture)
                 .build()
