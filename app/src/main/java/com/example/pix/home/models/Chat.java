@@ -16,6 +16,9 @@ import java.util.List;
 public class Chat extends ParseObject {
 
     public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+    public static final String USER_ONE = "userOne";
+    public static final String USER_TWO = "userTwo";
+    public static final int NUM_PER_PAGE = 20;
 
     public Chat() {
     }
@@ -36,18 +39,18 @@ public class Chat extends ParseObject {
     public static List<Chat> getChats(ParseUser user, int page) throws ParseException {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
-        q.whereEqualTo("userOne", user);
+        q.whereEqualTo(USER_ONE, user);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
-        p.whereEqualTo("userTwo", user);
+        p.whereEqualTo(USER_TWO, user);
         queries.add(p);
 
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
-        res.setLimit(5 * page + 5);
-        res.setSkip(5 * page);
+        res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
+        res.setSkip(NUM_PER_PAGE * page);
         return res.find();
     }
 
@@ -55,18 +58,18 @@ public class Chat extends ParseObject {
     public static void getChatsInBackground(ParseUser user, int page, FindCallback<Chat> handler) throws ParseException {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
-        q.whereEqualTo("userOne", user);
+        q.whereEqualTo(USER_ONE, user);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
-        p.whereEqualTo("userTwo", user);
+        p.whereEqualTo(USER_TWO, user);
         queries.add(p);
 
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
-        res.setLimit(5 * page + 5);
-        res.setSkip(5 * page);
+        res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
+        res.setSkip(NUM_PER_PAGE * page);
         res.findInBackground(handler);
     }
 
@@ -93,18 +96,18 @@ public class Chat extends ParseObject {
     }
 
     public void setUser(ParseUser user) {
-        put("userOne", user);
+        put(USER_ONE, user);
     }
 
     // Return the User that is not the current User as the "friend"
     public ParseUser getFriend(ParseUser currUser) {
-        ParseUser one = getParseUser("userOne");
-        ParseUser two = getParseUser("userTwo");
+        ParseUser one = getParseUser(USER_ONE);
+        ParseUser two = getParseUser(USER_TWO);
         return one.getObjectId().equals(currUser.getObjectId()) ? two : one;
     }
 
     public void setFriend(ParseUser friend) {
-        put("userTwo", friend);
+        put(USER_TWO, friend);
     }
 
     public int getPix() {
@@ -134,8 +137,8 @@ public class Chat extends ParseObject {
         q.include("chat");
         q.whereEqualTo("chat", this);
         q.orderByDescending("createdAt");
-        q.setLimit(20 * page + 20);
-        q.setSkip(20 * page);
+        q.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
+        q.setSkip(NUM_PER_PAGE * page);
 
         // If the user that requested these Messages is the one who they were sent to, mark as read
         if (this.getStatus() == 1) {
@@ -155,8 +158,8 @@ public class Chat extends ParseObject {
         q.include("chat");
         q.whereEqualTo("chat", this);
         q.orderByDescending("createdAt");
-        q.setLimit(20 * page + 20);
-        q.setSkip(20 * page);
+        q.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
+        q.setSkip(NUM_PER_PAGE * page);
 
         if (this.getStatus() == 1) {
             ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();

@@ -92,7 +92,7 @@ public class ChatActivity extends AppCompatActivity {
             profile = friend.fetchIfNeeded().getParseFile("profile");
             Glide.with(ChatActivity.this).load(profile.getUrl()).circleCrop().into(ivProfile);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Toast.makeText(ChatActivity.this, "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
         tvName.setText("" + friend.getUsername());
@@ -117,8 +117,8 @@ public class ChatActivity extends AppCompatActivity {
                         });
 
                     } catch (ParseException e) {
-                        e.printStackTrace();
                         Log.e("Error", "Failed fetching more messages", e);
+                        Toast.makeText(ChatActivity.this, "Error retrieving more messages", Toast.LENGTH_SHORT).show();
                     }
                 }
             };
@@ -138,7 +138,7 @@ public class ChatActivity extends AppCompatActivity {
                         // Case where we need to save a picture to DB first
                         newPic.saveInBackground((SaveCallback) e -> {
                             if (e != null) {
-                                Toast.makeText(ChatActivity.this, "Saved!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ChatActivity.this, "Error saving picture", Toast.LENGTH_SHORT).show();
                                 return;
                             }
                             newMessage.setPic(newPic);
@@ -152,7 +152,7 @@ public class ChatActivity extends AppCompatActivity {
                 return false;
             });
         } catch (ParseException e) {
-            e.printStackTrace();
+            Toast.makeText(ChatActivity.this, "Error retrieving messages", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -160,6 +160,7 @@ public class ChatActivity extends AppCompatActivity {
         newMessage.saveInBackground(e -> {
             if (e != null) {
                 Log.e("Error", "Failed saving message", e);
+                Toast.makeText(ChatActivity.this, "Error sending message", Toast.LENGTH_SHORT).show();
                 return;
             }
             messages.add(0, newMessage);
@@ -172,6 +173,7 @@ public class ChatActivity extends AppCompatActivity {
             newPic = null;
             chat.saveInBackground(e1 -> {
                 if (e1 != null) {
+                    Toast.makeText(ChatActivity.this, "Error sending read receipt", Toast.LENGTH_SHORT).show();
                     Log.e("Error", "Failed saving chat", e1);
                     return;
                 }
@@ -194,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     newPic = new ParseFile(new File(FetchPath.getPath(ChatActivity.this, imageUri)));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Toast.makeText(ChatActivity.this, "Error retrieving image", Toast.LENGTH_SHORT).show();
                 }
             }
         }

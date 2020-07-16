@@ -14,12 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.pix.R;
 import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
-import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
@@ -67,24 +67,20 @@ public class ChatsFragment extends Fragment {
                 @Override
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                     try {
-                        Chat.getChatsInBackground(ParseUser.getCurrentUser(), page, new FindCallback<Chat>() {
-                            @Override
-                            public void done(List<Chat> objects, ParseException e) {
-                                chats.addAll(objects);
-                                chatsAdapter.notifyDataSetChanged();
-                            }
+                        Chat.getChatsInBackground(ParseUser.getCurrentUser(), page, (objects, e) -> {
+                            chats.addAll(objects);
+                            chatsAdapter.notifyDataSetChanged();
                         });
                     } catch (ParseException e) {
-                        e.printStackTrace();
-                        Log.e("Error", "Failed Adding more Chats", e);
+                        Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
                     }
                 }
             };
 
             rvChats.addOnScrollListener(scroll);
         } catch (ParseException e) {
-            e.printStackTrace();
             Log.e("Error", "Error getting List of Chats", e);
+            Toast.makeText(getContext(), "Error retrieving chats", Toast.LENGTH_SHORT).show();
         }
 
     }

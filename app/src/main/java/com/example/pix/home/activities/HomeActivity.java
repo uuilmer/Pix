@@ -14,7 +14,6 @@ import com.example.pix.home.fragments.ChatsFragment;
 import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.fragments.ProfileFragment;
 import com.example.pix.login.LoginActivity;
-import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
@@ -72,30 +71,30 @@ public class HomeActivity extends AppCompatActivity {
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(1);
 
-//        LinearLayout homeContainer = findViewById(R.id.home_container);
+        /*LinearLayout homeContainer = findViewById(R.id.home_container);
 
-//        View.OnTouchListener onTouchListener = (view, motionEvent) -> {
-//            switch(motionEvent.getAction())
-//            {
-//                case MotionEvent.ACTION_DOWN:
-//                    x1 = motionEvent.getX();
-//                    return true;
-//                case MotionEvent.ACTION_UP:
-//                    x2 = motionEvent.getX();
-//                    float deltaX = x2 - x1;
-//                    if (deltaX > 0)
-//                    {
-//                        Toast.makeText(HomeActivity.this, "left2right swipe", Toast.LENGTH_SHORT).show ();
-//                    }
-//                    else
-//                    {
-//                        Toast.makeText(HomeActivity.this, "right2left swipe", Toast.LENGTH_SHORT).show ();
-//                    }
-//                    return true;
-//            }
-//            return super.onTouchEvent(motionEvent);
-//        };
-//
-//        homeContainer.setOnTouchListener(onTouchListener);
+        View.OnTouchListener onTouchListener = (view, motionEvent) -> {
+            switch(motionEvent.getAction())
+            {
+                case MotionEvent.ACTION_DOWN:
+                    x1 = motionEvent.getX();
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    x2 = motionEvent.getX();
+                    float deltaX = x2 - x1;
+                    if (deltaX > 0)
+                    {
+                        Toast.makeText(HomeActivity.this, "left2right swipe", Toast.LENGTH_SHORT).show ();
+                    }
+                    else
+                    {
+                        Toast.makeText(HomeActivity.this, "right2left swipe", Toast.LENGTH_SHORT).show ();
+                    }
+                    return true;
+            }
+            return super.onTouchEvent(motionEvent);
+        };
+
+        homeContainer.setOnTouchListener(onTouchListener); */
     }
 }

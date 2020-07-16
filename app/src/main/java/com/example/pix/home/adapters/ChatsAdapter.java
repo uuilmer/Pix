@@ -2,7 +2,6 @@ package com.example.pix.home.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -93,8 +92,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 Message recent = chat.getFirstMessage();
                 this.tvTime.setText("" + (recent != null ? recent.getTime().toString() : ""));
             } catch (ParseException e) {
-                e.printStackTrace();
                 Log.e("Error", "Failed getting status text and/or time", e);
+                Toast.makeText(context, "Error getting Chat status", Toast.LENGTH_SHORT).show();
             }
         }
     }
