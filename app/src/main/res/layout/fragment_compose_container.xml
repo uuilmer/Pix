@@ -5,9 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".home.fragments.ComposeFragment">
 
-    <TextView
-        android:layout_width="match_parent"
+    <fragment android:id="@+id/arFragment"
         android:layout_height="match_parent"
-        android:text="dos" />
+        android:layout_width="match_parent"
+        android:name="com.example.pix.home.fragments.ComposeFragment" />
 
 </FrameLayout>

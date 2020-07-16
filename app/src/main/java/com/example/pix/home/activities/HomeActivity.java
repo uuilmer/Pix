@@ -11,12 +11,21 @@ import android.os.Bundle;
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.fragments.ChatsFragment;
+import com.example.pix.home.fragments.ComposeContainerFragment;
 import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.fragments.ProfileFragment;
 import com.example.pix.login.LoginActivity;
+import com.google.ar.core.AugmentedFace;
+import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.rendering.Texture;
+import com.google.ar.sceneform.ux.AugmentedFaceNode;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -30,7 +39,6 @@ public class HomeActivity extends AppCompatActivity {
 
         mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
 
-        // Setup the PagerView and the colors we want for each tab
         PagerTabStrip pagerTabStrip = findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
 
@@ -40,7 +48,7 @@ public class HomeActivity extends AppCompatActivity {
         fragments.add(new ChatsFragment());
         fragmentNames.add("Chats");
         colors.add(Color.BLUE);
-        fragments.add(new ComposeFragment());
+        fragments.add(new ComposeContainerFragment());
         fragmentNames.add("Compose");
         colors.add(Color.GREEN);
         fragments.add(new ProfileFragment());
