@@ -32,8 +32,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // When one of (spotify, parse) is done, check if both are done
-    private void checkIfDone(){
-        if(loggedIn && authenticated){
+    private void checkIfDone() {
+        if (loggedIn && authenticated) {
             Intent i = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(i);
             finish();
@@ -44,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
 
         final EditText etUsername = findViewById(R.id.entered_username);
         final EditText etPassword = findViewById(R.id.entered_password);
@@ -56,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
             ParseUser.logInInBackground(username, password, new LogInCallback() {
                 @Override
                 public void done(ParseUser user, ParseException e) {
-                    if(e != null){
+                    if (e != null) {
                         Toast.makeText(LoginActivity.this, "Incorrect credentials", Toast.LENGTH_SHORT).show();
                         return;
                     }

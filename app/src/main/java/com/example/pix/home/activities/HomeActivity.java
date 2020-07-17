@@ -1,18 +1,35 @@
 package com.example.pix.home.activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.pix.R;
+import com.example.pix.chat.ChatActivity;
+import com.example.pix.chat.utils.FetchPath;
 import com.example.pix.home.fragments.HomeFragment;
 import com.example.pix.home.fragments.ProfileFragment;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class HomeActivity extends AppCompatActivity {
 
     SpotifyAppRemote mSpotifyAppRemote;
+    public static final int RESULT_LOAD_IMG = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,5 +65,10 @@ public class HomeActivity extends AppCompatActivity {
         };
 
         homeContainer.setOnTouchListener(onTouchListener); */
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

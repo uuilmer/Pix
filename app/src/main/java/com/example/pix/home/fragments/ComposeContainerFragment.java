@@ -41,42 +41,42 @@ public class ComposeContainerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         ComposeFragment composeFrag = (ComposeFragment) this.getChildFragmentManager().findFragmentById(R.id.arFragment);
 
-        // Define the fox mask
-        ModelRenderable.builder()
-                .setSource(getContext(), R.raw.fox_face)
-                .build()
-                .thenAccept(renderable ->
-                {
-                    this.modelRenderable = renderable;
-                    modelRenderable.setShadowCaster(false);
-                    modelRenderable.setShadowReceiver(false);
-                });
-        // Define the face mesh
-        Texture.builder()
-                .setSource(getContext(), R.drawable.fox_face_mesh_texture)
-                .build()
-                .thenAccept(texture1 -> this.texture = texture1);
-
-        composeFrag.getArSceneView().setCameraStreamRenderPriority(Renderable.RENDER_PRIORITY_FIRST);
-
-        composeFrag.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-
-            if(modelRenderable == null || texture == null){
-                return;
-            }
-            Frame frame = composeFrag.getArSceneView().getArFrame();
-
-            Collection<AugmentedFace> faces = frame.getUpdatedTrackables(AugmentedFace.class);
-            for(AugmentedFace face : faces){
-                if(isAdded)
-                    return;
-                AugmentedFaceNode augmentedFaceNode = new AugmentedFaceNode(face);
-                augmentedFaceNode.setParent(composeFrag.getArSceneView().getScene());
-                augmentedFaceNode.setFaceRegionsRenderable(modelRenderable);
-                augmentedFaceNode.setFaceMeshTexture(texture);
-
-                isAdded = true;
-            }
-        });
+//        // Define the fox mask
+//        ModelRenderable.builder()
+//                .setSource(getContext(), R.raw.gas_mask)
+//                .build()
+//                .thenAccept(renderable ->
+//                {
+//                    this.modelRenderable = renderable;
+//                    modelRenderable.setShadowCaster(false);
+//                    modelRenderable.setShadowReceiver(false);
+//                });
+//        // Define the face mesh
+//        Texture.builder()
+//                .setSource(getContext(), R.drawable.fox_face_mesh_texture)
+//                .build()
+//                .thenAccept(texture1 -> this.texture = texture1);
+//
+//        composeFrag.getArSceneView().setCameraStreamRenderPriority(Renderable.RENDER_PRIORITY_FIRST);
+//
+//        composeFrag.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+//
+//            if(modelRenderable == null || texture == null){
+//                return;
+//            }
+//            Frame frame = composeFrag.getArSceneView().getArFrame();
+//
+//            Collection<AugmentedFace> faces = frame.getUpdatedTrackables(AugmentedFace.class);
+//            for(AugmentedFace face : faces){
+//                if(isAdded)
+//                    return;
+//                AugmentedFaceNode augmentedFaceNode = new AugmentedFaceNode(face);
+//                augmentedFaceNode.setParent(composeFrag.getArSceneView().getScene());
+//                augmentedFaceNode.setFaceRegionsRenderable(modelRenderable);
+//                augmentedFaceNode.setFaceMeshTexture(texture);
+//
+//                isAdded = true;
+//            }
+//        });
     }
 }
