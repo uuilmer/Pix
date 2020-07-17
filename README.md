@@ -186,5 +186,3 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
    * (Create/POST) Add a song to music queue
    * (Read/GET) Get current and next song
    * (Delete) Change the current or next song
-* AR Filters
-   * (Read/GET) Get the list of filters and save one
