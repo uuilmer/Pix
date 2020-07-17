@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
+import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.chat.utils.FetchPath;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
@@ -114,6 +115,10 @@ public class ProfileFragment extends Fragment {
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
         pix.setText("" + ParseUser.getCurrentUser().getInt("pix"));
+
+        // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
+        // and update their personal Musicroom accordingly
+        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroomm, new MusicRoomFragment(ParseUser.getCurrentUser())).commit();
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

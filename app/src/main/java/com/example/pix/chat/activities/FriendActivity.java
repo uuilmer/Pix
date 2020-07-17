@@ -13,9 +13,13 @@ import android.widget.Toast;
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
 import com.example.pix.chat.fragments.MusicRoomFragment;
+import com.example.pix.home.models.Chat;
 import com.example.pix.login.LoginActivity;
+import com.parse.ParseException;
+import com.parse.ParseUser;
 
 public class FriendActivity extends AppCompatActivity {
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -23,7 +27,15 @@ public class FriendActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new MusicRoomFragment()).commit();
+        Chat chat = Chat.getChat(getIntent().getStringExtra("chat"));
+
+        // As of now, we are not considering displaying the ChatFragment
+        // we are building the MusicRomFragment, so directly create it:
+        try {
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new MusicRoomFragment(chat.getFriend(ParseUser.getCurrentUser()).fetch())).commit();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
 
