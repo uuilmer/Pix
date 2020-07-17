@@ -1,4 +1,4 @@
-package com.example.pix.chat;
+package com.example.pix.chat.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,13 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.pix.R;
+import com.example.pix.chat.fragments.ChatFragment;
+import com.example.pix.chat.fragments.MusicRoomFragment;
+import com.example.pix.login.LoginActivity;
 
-public class ChatActivity extends AppCompatActivity {
-
-    public static final int RESULT_LOAD_IMG = 100;
-    public static final int REQUEST_PERM = 101;
+public class FriendActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -22,7 +23,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new MusicRoomFragment()).commit();
     }
 
 

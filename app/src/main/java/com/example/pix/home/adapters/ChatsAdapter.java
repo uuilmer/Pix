@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.ChatActivity;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.parse.ParseException;
@@ -74,7 +74,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             this.llSelect.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent i = new Intent(context, ChatActivity.class);
+                    Intent i = new Intent(context, FriendActivity.class);
                     i.putExtra("chat", chat.getObjectId());
                     context.startActivity(i);
                 }

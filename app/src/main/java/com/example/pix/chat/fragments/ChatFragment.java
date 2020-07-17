@@ -1,4 +1,4 @@
-package com.example.pix.chat;
+package com.example.pix.chat.fragments;
 
 import android.Manifest;
 import android.content.Intent;
