@@ -13,9 +13,6 @@ import com.example.pix.R;
 
 public class ChatActivity extends AppCompatActivity {
 
-    public static final int RESULT_LOAD_IMG = 100;
-    public static final int REQUEST_PERM = 101;
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {

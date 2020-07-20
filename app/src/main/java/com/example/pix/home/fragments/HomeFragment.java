@@ -33,6 +33,7 @@ public class HomeFragment extends Fragment {
     }
 
     SpotifyAppRemote mSpotifyAppRemote;
+    List<Fragment> fragments;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -57,7 +58,7 @@ public class HomeFragment extends Fragment {
 
         SearchView svChats = view.findViewById(R.id.search_user);
 
-        List<Fragment> fragments = new ArrayList<>();
+        fragments = new ArrayList<>();
         List<String> fragmentNames = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         fragments.add(new ChatsFragment());
@@ -93,4 +94,5 @@ public class HomeFragment extends Fragment {
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(1);
     }
+
 }

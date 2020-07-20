@@ -48,11 +48,7 @@ public class ComposeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (!checkCameraHardware(getContext())) {
             Toast.makeText(getContext(), "No camera available!", Toast.LENGTH_SHORT).show();
-            try {
-                finalize();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+            System.exit(0);
         }
     }
 
@@ -102,13 +98,16 @@ public class ComposeFragment extends Fragment {
         // When we are done taking a picture, go to a new ChatActivity with this new Image ParseFile
         Camera.PictureCallback callback = (bytes, camera) -> {
             ParseFile image = new ParseFile(bytes);
-            getParentFragmentManager().beginTransaction().replace(R.id.friend_container, new ChatFragment(image)).commit();
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.friend_container, new ChatFragment(image))
+                    .commit();
         };
 
         // When we take a pic, do the above ^
         (view.findViewById(R.id.compose_take)).setOnClickListener(view1 -> c[0].takePicture(() -> {
 
-        }, callback, callback));
+        }, null, callback));
     }
 
 

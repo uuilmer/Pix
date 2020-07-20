@@ -102,6 +102,21 @@ public class ChatFragment extends Fragment {
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
+        if(newPic != null) {
+            newPic.saveInBackground((SaveCallback) e -> {
+                if(e != null){
+                    Toast.makeText(getContext(), "Error sending pic", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Message m = new Message();
+                m.setPic(newPic);
+                m.setFrom(ParseUser.getCurrentUser());
+                m.setTo(friend);
+                m.setChat(chat);
+                saveMessage(m);
+            });
+        }
+
         // When we click the plus, go to add a pic
         ivPictures.setOnClickListener(view1 -> {
             Intent i = new Intent(Intent.ACTION_PICK);

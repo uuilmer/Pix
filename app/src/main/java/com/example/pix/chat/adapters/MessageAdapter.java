@@ -94,7 +94,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            this.text.setText("" + message.getText());
+            this.text.setVisibility(View.GONE);
+            if(message.getText() != null && !message.getText().equals("")) {
+                this.text.setVisibility(View.VISIBLE);
+                this.text.setText("" + message.getText());
+            }
+
 
             ParseFile pic = message.getPic();
             if (pic != null) {
