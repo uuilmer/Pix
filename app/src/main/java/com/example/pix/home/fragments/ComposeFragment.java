@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.PixelCopy;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -52,18 +53,32 @@ public class ComposeFragment extends Fragment {
         }
     }
 
+    final int[] currCamera = new int[1];
+    final Camera[] c = new Camera[1];
+    final CameraPreview[] preview = new CameraPreview[1];
+    FrameLayout frameLayout;
+    Button take;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        final int[] currCamera = {Camera.CameraInfo.CAMERA_FACING_FRONT};
-        final Camera[] c = {Camera.open(currCamera[0])};
+
+        frameLayout = view.findViewById(R.id.compose_camera);
+        take = view.findViewById(R.id.compose_take);
+
+        setup();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setup(){
+        currCamera[0] = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        c[0] = Camera.open(currCamera[0]);
 
         // Set as Portrait
         c[0].setDisplayOrientation(90);
 
         // Create the preview and set as the FrameLayout
-        final CameraPreview[] preview = {new CameraPreview(getContext(), c[0])};
-        FrameLayout frameLayout = view.findViewById(R.id.compose_camera);
+        preview[0] = new CameraPreview(getContext(), c[0]);
         frameLayout.addView(preview[0]);
 
         // When we double-tap, create a new preview with the only difference being the Camera source, and set it as our FrameLayout's only child
@@ -105,11 +120,20 @@ public class ComposeFragment extends Fragment {
         };
 
         // When we take a pic, do the above ^
-        (view.findViewById(R.id.compose_take)).setOnClickListener(view1 -> c[0].takePicture(() -> {
+        take.setOnClickListener(view1 -> c[0].takePicture(() -> {
 
         }, null, callback));
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        /*  When we resume the ComposeFragment that lives in Home, we may have used a ComposeFragment in ChatFragment
+            to send a Snap that caused this (HomeFragment's ComposeFragment), which was still alive in the background,
+            to have a reference to Camera which was invalidated the moment we opened it in ChatFragment. To fix this
+            we need to re-setup the Camera whenever a ComposeFragment is resumed. */
+        setup();
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
