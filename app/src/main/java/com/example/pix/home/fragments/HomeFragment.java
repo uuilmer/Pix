@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment {
         fragments.add(new ChatsFragment());
         fragmentNames.add("Chats");
         colors.add(Color.BLUE);
-        fragments.add(new ComposeContainerFragment());
+        fragments.add(new ComposeFragment());
         fragmentNames.add("Compose");
         colors.add(Color.GREEN);
 
