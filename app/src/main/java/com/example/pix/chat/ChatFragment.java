@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.adapters.MessageAdapter;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
@@ -44,6 +45,14 @@ import static android.app.Activity.RESULT_OK;
 
 public class ChatFragment extends Fragment {
 
+
+    public ChatFragment() {
+    }
+
+    public ChatFragment(ParseFile parseFile) {
+        this.newPic = parseFile;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -52,14 +61,14 @@ public class ChatFragment extends Fragment {
 
     public static final int RESULT_LOAD_IMG = 100;
     public static final int REQUEST_PERM = 101;
-    ImageView ivNewPic;
-    ParseFile newPic;
-    MessageAdapter messageAdapter;
-    List<Message> messages;
-    RecyclerView rvMessages;
-    EditText etText;
-    Chat chat;
-    ImageView ivPictures;
+    private ImageView ivNewPic;
+    private ParseFile newPic;
+    private MessageAdapter messageAdapter;
+    private List<Message> messages;
+    private RecyclerView rvMessages;
+    private EditText etText;
+    private Chat chat;
+    private ImageView ivPictures;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -81,6 +90,14 @@ public class ChatFragment extends Fragment {
         ivPictures = view.findViewById(R.id.chat_pictures);
         ivNewPic = view.findViewById(R.id.chat_image);
 
+        // If we click the camera, go to the ComposeFragment
+        ivCamera.setOnClickListener(view12 -> {
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.friend_container, new ComposeFragment())
+                    .commit();
+        });
+
         ivBack.setOnClickListener(view1 -> getActivity().finish());
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
@@ -100,6 +117,7 @@ public class ChatFragment extends Fragment {
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
+
 
         tvName.setText("" + friend.getUsername());
 

@@ -1,6 +1,7 @@
 package com.example.pix.home.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -13,15 +14,29 @@ import androidx.fragment.app.Fragment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.PixelCopy;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.example.pix.R;
+import com.example.pix.chat.ChatActivity;
+import com.example.pix.chat.ChatFragment;
 import com.example.pix.home.utils.CameraPreview;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.SaveCallback;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class ComposeFragment extends Fragment {
+
+    ChatActivity mActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -83,6 +98,31 @@ public class ComposeFragment extends Fragment {
                 return true;
             }
         });
+
+        // When we are done taking a picture, go to a new ChatActivity with this new Image ParseFile
+        Camera.PictureCallback callback = (bytes, camera) -> {
+            ParseFile image = new ParseFile(bytes);
+            getParentFragmentManager().beginTransaction().replace(R.id.friend_container, new ChatFragment(image)).commit();
+        };
+
+        // When we take a pic, do the above ^
+        (view.findViewById(R.id.compose_take)).setOnClickListener(view1 -> c[0].takePicture(() -> {
+
+        }, callback, callback));
+    }
+
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof ChatActivity)
+            mActivity = (ChatActivity) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mActivity = null;
     }
 
     private boolean checkCameraHardware(Context context) {
