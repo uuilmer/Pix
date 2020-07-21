@@ -144,7 +144,7 @@ public class ComposeFragment extends Fragment {
 
                 List<ParseUser> results = new ArrayList<>();
                 // Tell the adapter whether this adapter will need to handle saved pics(New Snap from ComposeFragment)
-                SearchAdapter adapter = new SearchAdapter(true, getContext(), results);
+                SearchAdapter adapter = new SearchAdapter(false, getContext(), results);
                 rvResults.setAdapter(adapter);
                 rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
 

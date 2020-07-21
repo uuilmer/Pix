@@ -78,14 +78,17 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         public void bind(ParseUser user) {
             this.tvPix.setText("" + user.getInt("pix") + "P");
             this.llSelect.setOnClickListener(view -> {
+                // If we select a result, we will want to go to ChatActivity
                 Intent i = new Intent(context, ChatActivity.class);
 
+                // Look to see if a Chat with the selected User already exists
                 Chat chat = findChat(true, user);
-                Toast.makeText(context, "" + newPic, Toast.LENGTH_SHORT).show();
-                if (newPic) {
-                    Toast.makeText(context, "good", Toast.LENGTH_SHORT).show();
+
+                // If we indicated that this Adapter was made with intent to send pic,
+                if (newPic)
                     i.putExtra("newPic", newPic);
-                }
+
+                // If we couldnt find an existing CHat, make a new one
                 if(chat == null){
                     Chat newChat = new Chat();
                     newChat.setUser(ParseUser.getCurrentUser());
@@ -110,6 +113,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             this.tvTime.setVisibility(View.GONE);
         }
     }
+
+    // Note: userOne and userTwo in Chat table is both people in the chat in no particular order,
+    // this we need to check both cases:
+        // User is userOne and friend is userTwo
+        // friend is userOne and user is userTwo
     private Chat findChat(boolean userOne, ParseUser user){
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.include("userOne");
