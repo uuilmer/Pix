@@ -1,27 +1,26 @@
 package com.example.pix.chat.fragments;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
-import com.example.pix.home.models.Chat;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-import com.spotify.protocol.client.Subscription;
-import com.spotify.protocol.types.PlayerState;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,6 +29,7 @@ import java.util.TimerTask;
 public class MusicRoomFragment extends Fragment {
 
     ParseUser user;
+    Timer timer;
 
     public MusicRoomFragment(ParseUser user) {
         this.user = user;
@@ -53,74 +53,90 @@ public class MusicRoomFragment extends Fragment {
         q.whereEqualTo("user", user);
         final MusicRoom[] musicRoom = new MusicRoom[1];
 
-        try {
-            musicRoom[0] = q.getFirst();
-            // Fetch the song that's playing at the moment
-            final Song[] nowPlaying = {musicRoom[0].getCurrentSong().fetch()};
+        final boolean[] playing = {false};
 
-            // Case where the User is the owner
-            if (musicRoom[0].getUser().fetch().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
-                // Check if the song is playing
-                final boolean[] isPlaying = {nowPlaying[0].isPlaying()};
+        ImageView play = view.findViewById(R.id.musicroom_play);
+        play.setOnClickListener(view1 -> {
+            if (!playing[0]) {
+                play.setImageResource(R.drawable.musicroom_pause);
+                try {
+                    musicRoom[0] = q.getFirst();
+                    // Fetch the song that's playing at the moment
+                    final Song[] nowPlaying = {musicRoom[0].getCurrentSong().fetch()};
 
-                remote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
-                    // Check if the Song changed, in which case we update it in Parse
-                    if (!playerState.track.uri.equals(nowPlaying[0].getURI())) {
-                        nowPlaying[0].setURI(playerState.track.uri);
-                        nowPlaying[0].saveInBackground(e -> {
-                            if (e != null)
-                                Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                    // Case where the User is the owner
+                    if (musicRoom[0].getUser().fetch().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                        // Check if the song is playing
+                        final boolean[] isPlaying = {nowPlaying[0].isPlaying()};
+
+                        remote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
+                            // Check if the Song changed, in which case we update it in Parse
+                            if (!playerState.track.uri.equals(nowPlaying[0].getURI())) {
+                                nowPlaying[0].setURI(playerState.track.uri);
+                                nowPlaying[0].saveInBackground(e -> {
+                                    if (e != null)
+                                        Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            // Check if the playing/paused status changed, if so update it
+                            if (playerState.isPaused == isPlaying[0]) {
+                                isPlaying[0] = !playerState.isPaused;
+                                nowPlaying[0].setPlaying(isPlaying[0]);
+                                nowPlaying[0].saveInBackground(e -> {
+                                    if (e != null)
+                                        Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                                });
+                            }
                         });
+                        // Case where User is a listener
+                    } else {
+                        // Check if the song is currently playing
+                        final boolean[] isPlaying = {nowPlaying[0].isPlaying()};
+                        remote.getPlayerApi().play(nowPlaying[0].getURI());
+                        if (!isPlaying[0])
+                            remote.getPlayerApi().pause();
+                        // Every fixed interval, check for updates to Parse
+                        timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    // Update our local Parse objects
+                                    musicRoom[0] = q.getFirst();
+                                    Song checkForChange = musicRoom[0].getCurrentSong().fetch();
+                                    // If the song changes, play this new song
+                                    if (!checkForChange.getURI().equals(nowPlaying[0].getURI())) {
+                                        nowPlaying[0] = checkForChange;
+                                        remote.getPlayerApi().play(checkForChange.getURI());
+                                    }
+                                    // If the song's play/pause status changes, update it with the remote
+                                    if (checkForChange.isPlaying() != isPlaying[0]) {
+                                        isPlaying[0] = checkForChange.isPlaying();
+                                        if (isPlaying[0])
+                                            remote.getPlayerApi().resume();
+                                        else
+                                            remote.getPlayerApi().pause();
+                                    }
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }, 0, 50);
+                        // If the song this User played is not the same as the one in Parse, they must have manually changed it
+                        // in which case cancel our controls
                     }
-                    // Check if the playing/paused status changed, if so update it
-                    if (playerState.isPaused == isPlaying[0]) {
-                        isPlaying[0] = !playerState.isPaused;
-                        nowPlaying[0].setPlaying(isPlaying[0]);
-                        nowPlaying[0].saveInBackground(e -> {
-                            if (e != null)
-                                Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                });
-                // Case where User is a listener
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             } else {
-                // Check if the song is currently playing
-                final boolean[] isPlaying = {nowPlaying[0].isPlaying()};
-                remote.getPlayerApi().play(nowPlaying[0].getURI());
-                if (!isPlaying[0])
-                    remote.getPlayerApi().pause();
-                // Every fixed interval, check for updates to Parse
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            // Update our local Parse objects
-                            musicRoom[0] = q.getFirst();
-                            Song checkForChange = musicRoom[0].getCurrentSong().fetch();
-                            // If the song changes, play this new song
-                            if (!checkForChange.getURI().equals(nowPlaying[0].getURI())) {
-                                nowPlaying[0] = checkForChange;
-                                remote.getPlayerApi().play(checkForChange.getURI());
-                            }
-                            // If the song's play/pause status changes, update it with the remote
-                            if (checkForChange.isPlaying() != isPlaying[0]) {
-                                isPlaying[0] = checkForChange.isPlaying();
-                                if (isPlaying[0])
-                                    remote.getPlayerApi().resume();
-                                else
-                                    remote.getPlayerApi().pause();
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, 0, 50);
-                // If the song this User played is not the same as the one in Parse, they must have manually changed it
-                // in which case cancel our controls
+
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+            playing[0] = !playing[0];
+        });
+
+        Glide.with(getContext()).load(Uri.parse("android.resource://com.example.pix/" + R.drawable.musicroom_playing)).into((ImageView) view.findViewById(R.id.musicroom_playing));
+
+
 
     }
 }
