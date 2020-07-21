@@ -1,10 +1,16 @@
 package com.example.pix.home.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +20,7 @@ import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.pix.R;
+import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.login.LoginActivity;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
@@ -56,7 +63,19 @@ public class HomeFragment extends Fragment {
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
 
-        SearchView svChats = view.findViewById(R.id.search_user);
+        Button svChats = view.findViewById(R.id.search_user);
+
+        svChats.setOnClickListener(view1 -> {
+            LinearLayout container = view.findViewById(R.id.home_container);
+            LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View popup = layoutInflater.inflate(R.layout.popup_search, null);
+            ImageView close = popup.findViewById(R.id.popup_close);
+            PopupWindow popupWindow = new PopupWindow(popup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            popupWindow.showAtLocation(container, Gravity.CENTER, 0, 0);
+            close.setOnClickListener(view2 -> {
+                popupWindow.dismiss();
+            });
+        });
 
         fragments = new ArrayList<>();
         List<String> fragmentNames = new ArrayList<>();
