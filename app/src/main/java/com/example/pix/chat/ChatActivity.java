@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.example.pix.R;
+import com.example.pix.home.fragments.ComposeFragment;
+import com.example.pix.home.fragments.HomeFragment;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -19,7 +21,11 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
+        // Check if we took a picture from HomeFragment's ComposeFragment
+        if(getIntent().hasExtra("newPic"))
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image)).commit();
+        else
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
     }
 
 
