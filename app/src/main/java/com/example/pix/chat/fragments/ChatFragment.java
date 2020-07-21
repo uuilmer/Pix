@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.adapters.MessageAdapter;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.fragments.ProfileFragment;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
@@ -100,6 +101,12 @@ public class ChatFragment extends Fragment {
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
+
+        ivProfile.setOnClickListener(view12 -> getParentFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
+                .addToBackStack("stack")
+                .replace(R.id.friend_container, new ProfileFragment(friend))
+                .commit());
 
         tvName.setText("" + friend.getUsername());
 

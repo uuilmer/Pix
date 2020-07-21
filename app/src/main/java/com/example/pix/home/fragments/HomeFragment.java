@@ -16,6 +16,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.login.LoginActivity;
+import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class HomeFragment extends Fragment {
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
                         .addToBackStack("stack")
-                        .replace(R.id.home_profile, new ProfileFragment())
+                        .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
                         .commit();
             }
         });

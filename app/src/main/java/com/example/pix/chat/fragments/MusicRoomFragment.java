@@ -115,6 +115,8 @@ public class MusicRoomFragment extends Fragment {
                         }
                     }
                 }, 0, 50);
+                // If the song this User played is not the same as the one in Parse, they must have manually changed it
+                // in which case cancel our controls
             }
         } catch (ParseException e) {
             e.printStackTrace();

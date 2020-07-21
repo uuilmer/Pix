@@ -35,8 +35,11 @@ import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
 
 public class ProfileFragment extends Fragment {
 
-    public ProfileFragment() {
-        // Required empty public constructor
+    ParseUser user;
+    boolean isOwner;
+
+    public ProfileFragment(ParseUser user) {
+        this.user = user;
     }
 
     @Override
@@ -47,8 +50,14 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        // Check if this ProfileFragment's user is the current user
+        isOwner = user.getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
+
+        // Assign a layout based on the above
+        if (isOwner)
+            return inflater.inflate(R.layout.fragment_profile, container, false);
+        else
+            return inflater.inflate(R.layout.fragment_friend, container, false);
     }
 
     ImageView profile;
@@ -56,69 +65,68 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Toast.makeText(getContext(), "lool", Toast.LENGTH_SHORT).show();
 
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
-        (view.findViewById(R.id.profile_back)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getActivity().onBackPressed();
-            }
-        });
-
-        (view.findViewById(R.id.profile_signout)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ParseUser.logOut();
-                Intent i = new Intent(getActivity(), LoginActivity.class);
-                getActivity().startActivity(i);
-                getActivity().finish();
-            }
-        });
-        LinearLayout selectNewPic = view.findViewById(R.id.profile_change_pic);
-        // When we click the plus, go to add a pic
-        selectNewPic.setOnClickListener(view1 -> {
-            Intent i = new Intent(Intent.ACTION_PICK);
-            i.setType("image/*");
-            startActivityForResult(i, RESULT_LOAD_IMG);
-        });
+        (view.findViewById(R.id.profile_back)).setOnClickListener(view12 -> getActivity().onBackPressed());
 
         profile = view.findViewById(R.id.profile_pic);
 
         // Load profile pic
         Glide.with(getContext())
-                .load(ParseUser.getCurrentUser()
+                .load(user
                         .getParseFile("profile").getUrl())
                 .circleCrop()
                 .into(profile);
 
-        // If we press "Enter" in the username EditText, update the username
-        EditText name = view.findViewById(R.id.profile_name);
-        name.setText("" + ParseUser.getCurrentUser().getUsername());
-        name.setOnKeyListener((view1, i, keyEvent) -> {
-            if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
-                // Create new message
-                ParseUser.getCurrentUser().setUsername(name.getText().toString());
-                ParseUser.getCurrentUser().saveInBackground(e -> {
-                    if (e != null) {
-                        Toast.makeText(getContext(), "Username is taken", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Toast.makeText(getContext(), "Updated name!", Toast.LENGTH_SHORT).show();
-                });
-                return true;
-            }
-            return false;
-        });
+        // We need to differentiate if this ProfileFragment is a friend or the user
+        // because we use a different xml layout for each case.
+        if (isOwner) {
+            // If we press "Enter" in the username EditText, update the username
+            EditText name = view.findViewById(R.id.profile_name);
+            name.setText("" + user.getUsername());
 
+            (view.findViewById(R.id.profile_signout)).setOnClickListener(view13 -> {
+                ParseUser.logOut();
+                Intent i = new Intent(getActivity(), LoginActivity.class);
+                getActivity().startActivity(i);
+                getActivity().finish();
+            });
+            LinearLayout selectNewPic = view.findViewById(R.id.profile_change_pic);
+            // When we click the plus, go to add a pic
+            selectNewPic.setOnClickListener(view1 -> {
+                Intent i = new Intent(Intent.ACTION_PICK);
+                i.setType("image/*");
+                startActivityForResult(i, RESULT_LOAD_IMG);
+            });
+
+            name.setOnKeyListener((view1, i, keyEvent) -> {
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
+                    // Create new message
+                    ParseUser.getCurrentUser().setUsername(name.getText().toString());
+                    ParseUser.getCurrentUser().saveInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Username is taken", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Toast.makeText(getContext(), "Updated name!", Toast.LENGTH_SHORT).show();
+                    });
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            // The friend's name is a TextView, so that the user cannot edit it
+            TextView name = view.findViewById(R.id.profile_name);
+            name.setText("" + user.getUsername());// If we press "Enter" in the username EditText, update the username
+        }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        pix.setText("" + ParseUser.getCurrentUser().getInt("pix"));
+        pix.setText("" + user.getInt("pix"));
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
-        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroomm, new MusicRoomFragment(ParseUser.getCurrentUser())).commit();
+        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
