@@ -158,7 +158,7 @@ public class ComposeFragment extends Fragment {
                         q.whereStartsWith("username", s);
                         Toast.makeText(getContext(), "one", Toast.LENGTH_SHORT).show();
                         q.findInBackground((objects, e) -> {
-                            if(e != null){
+                            if (e != null) {
                                 Toast.makeText(getContext(), "Error searching!", Toast.LENGTH_SHORT).show();
                                 return;
                             }
