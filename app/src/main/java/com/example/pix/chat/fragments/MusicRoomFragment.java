@@ -28,14 +28,19 @@ import java.util.TimerTask;
 
 public class MusicRoomFragment extends Fragment {
 
-    ParseUser ownerOfRoom;
+    private ParseUser ownerOfRoom;
+    // Make the listenerTimer static because we can only be listening to ONE stream, regardless of how many FriendFragments
+    // we open.
     public static Timer listenerTimer;
-    ImageView ivPlay;
-    SpotifyAppRemote remote;
-    ParseQuery<MusicRoom> q;
+    private ImageView ivPlay;
+    // We don't need to worry about making the remote static and limiting that only one playerApi can be subscribed to,
+    // because the only person that can subscribe to a playerapi is the owner, who can only do it in their
+    // profile screen.
+    private SpotifyAppRemote remote;
+    private ParseQuery<MusicRoom> q;
     public static boolean isOwner;
-    ImageView playingGif;
-    final MusicRoom[] musicRoom = new MusicRoom[1];
+    private ImageView playingGif;
+    private final MusicRoom[] musicRoom = new MusicRoom[1];
 
     public MusicRoomFragment(ParseUser ownerOfRoom) {
         this.ownerOfRoom = ownerOfRoom;
