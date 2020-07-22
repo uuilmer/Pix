@@ -20,6 +20,7 @@ import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
 
 import java.util.List;
@@ -81,12 +82,13 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             });
             try {
                 ParseUser friend = chat.getFriend(ParseUser.getCurrentUser()).fetchIfNeeded();
-                Glide.with(context)
-                        .load(friend
-                                .getParseFile("profile")
-                                .getUrl())
-                        .circleCrop()
-                        .into(this.ivProfile);
+                ParseFile pic = friend.getParseFile("profile");
+                if (pic != null)
+                    Glide.with(context)
+                            .load(pic
+                                    .getUrl())
+                            .circleCrop()
+                            .into(this.ivProfile);
                 this.tvName.setText("" + friend.getUsername());
                 this.tvStatus.setText("" + chat.getStatusText());
                 Message recent = chat.getFirstMessage();

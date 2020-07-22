@@ -30,7 +30,11 @@ public class MusicRoom extends ParseObject {
         put("pix", pix);
     }
 
-    public Song getCurrentSong(){
-        return (Song)getParseObject("nowPlaying");
+    public Song getCurrentSong() {
+        return (Song) getParseObject("nowPlaying");
+    }
+
+    public void setCurrentSong(Song song) {
+        put("nowPlaying", song);
     }
 }
