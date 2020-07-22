@@ -45,6 +45,17 @@ import static android.app.Activity.RESULT_OK;
 
 public class ChatFragment extends Fragment {
 
+    public static final int RESULT_LOAD_IMG = 100;
+    public static final int REQUEST_PERM = 101;
+    public static final String USER_PROFILE_CODE = "profile";
+    private ImageView ivNewPic;
+    private ParseFile newPic;
+    private MessageAdapter messageAdapter;
+    private List<Message> messages;
+    private RecyclerView rvMessages;
+    private EditText etText;
+    private Chat chat;
+    private ImageView ivPictures;
 
     public ChatFragment() {
     }
@@ -58,17 +69,6 @@ public class ChatFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
-
-    public static final int RESULT_LOAD_IMG = 100;
-    public static final int REQUEST_PERM = 101;
-    private ImageView ivNewPic;
-    private ParseFile newPic;
-    private MessageAdapter messageAdapter;
-    private List<Message> messages;
-    private RecyclerView rvMessages;
-    private EditText etText;
-    private Chat chat;
-    private ImageView ivPictures;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -91,7 +91,7 @@ public class ChatFragment extends Fragment {
         ivNewPic = view.findViewById(R.id.chat_image);
 
         // If we click the camera, go to the ComposeFragment
-        ivCamera.setOnClickListener(view12 -> {
+        ivCamera.setOnClickListener(view1 -> {
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.friend_container, new ComposeFragment())
@@ -102,9 +102,9 @@ public class ChatFragment extends Fragment {
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
-        if(newPic != null) {
+        if (newPic != null) {
             newPic.saveInBackground((SaveCallback) e -> {
-                if(e != null){
+                if (e != null) {
                     Toast.makeText(getContext(), "Error sending pic", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -127,7 +127,7 @@ public class ChatFragment extends Fragment {
         // Get this friend's profile pic
         ParseFile profile;
         try {
-            profile = friend.fetchIfNeeded().getParseFile("profile");
+            profile = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
             Glide.with(getActivity()).load(profile.getUrl()).circleCrop().into(ivProfile);
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
@@ -183,9 +183,10 @@ public class ChatFragment extends Fragment {
                             newMessage.setPic(newPic);
                             saveMessage(newMessage);
                         });
-                    } else
+                    } else {
                         // Case where there is no picture
                         saveMessage(newMessage);
+                    }
                     return true;
                 }
                 return false;

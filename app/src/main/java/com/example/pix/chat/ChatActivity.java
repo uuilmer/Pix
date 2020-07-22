@@ -11,9 +11,10 @@ import android.os.Bundle;
 
 import com.example.pix.R;
 import com.example.pix.home.fragments.ComposeFragment;
-import com.example.pix.home.fragments.HomeFragment;
 
 public class ChatActivity extends AppCompatActivity {
+
+    public static final String NEW_PIC_CODE = "newPic";
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -22,10 +23,12 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friend);
 
         // Check if we took a picture from HomeFragment's ComposeFragment
-        if(getIntent().hasExtra("newPic"))
+        if (getIntent().hasExtra(NEW_PIC_CODE)) {
             getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image)).commit();
-        else
+        }
+        else {
             getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
+        }
     }
 
 

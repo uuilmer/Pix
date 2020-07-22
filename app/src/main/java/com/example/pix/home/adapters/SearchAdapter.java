@@ -1,6 +1,5 @@
 package com.example.pix.home.adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -9,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,11 +23,16 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
+import static com.example.pix.chat.ChatActivity.NEW_PIC_CODE;
+import static com.example.pix.chat.ChatFragment.USER_PROFILE_CODE;
+import static com.example.pix.home.models.Chat.USER_ONE;
+import static com.example.pix.home.models.Chat.USER_TWO;
+
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
-    Context context;
-    List<ParseUser> users;
-    boolean newPic;
+    private Context context;
+    private List<ParseUser> users;
+    private boolean newPic;
 
     public SearchAdapter(Context context, List<ParseUser> users) {
         this.context = context;
@@ -59,13 +62,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         return users.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivProfile;
-        TextView tvName;
-        TextView tvStatus;
-        TextView tvTime;
-        TextView tvPix;
-        LinearLayout llSelect;
+    protected class ViewHolder extends RecyclerView.ViewHolder {
+        private ImageView ivProfile;
+        private TextView tvName;
+        private TextView tvStatus;
+        private TextView tvTime;
+        private TextView tvPix;
+        private LinearLayout llSelect;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -87,8 +90,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 Chat chat = findChat(true, user);
 
                 // If we indicated that this Adapter was made with intent to send pic,
-                if (newPic)
-                    i.putExtra("newPic", newPic);
+                if (newPic) i.putExtra(NEW_PIC_CODE, newPic);
 
                 // If we couldnt find an existing CHat, make a new one
                 if (chat == null) {
@@ -104,13 +106,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 i.putExtra("chat", chat.getObjectId());
                 context.startActivity(i);
             });
-            ParseFile pic = user.getParseFile("profile");
-            if (pic != null)
+            ParseFile pic = user.getParseFile(USER_PROFILE_CODE);
+            if (pic != null) {
                 Glide.with(context)
                         .load(pic
                                 .getUrl())
                         .circleCrop()
                         .into(this.ivProfile);
+            }
             this.tvName.setText("" + user.getUsername());
             this.tvStatus.setVisibility(View.GONE);
             this.tvTime.setVisibility(View.GONE);
@@ -123,24 +126,25 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     // friend is userOne and user is userTwo
     private Chat findChat(boolean userOne, ParseUser user) {
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
-        q.include("userOne");
-        q.include("userTwo");
+        q.include(USER_ONE);
+        q.include(USER_TWO);
         if (userOne) {
-            q.whereEqualTo("userOne", ParseUser.getCurrentUser());
-            q.whereEqualTo("userTwo", user);
+            q.whereEqualTo(USER_ONE, ParseUser.getCurrentUser());
+            q.whereEqualTo(USER_TWO, user);
         } else {
-            q.whereEqualTo("userOne", user);
-            q.whereEqualTo("userTwo", ParseUser.getCurrentUser());
+            q.whereEqualTo(USER_ONE, user);
+            q.whereEqualTo(USER_TWO, ParseUser.getCurrentUser());
         }
         try {
             Chat res = q.getFirst();
-            if (res != null)
+            if (res != null) {
                 return res;
-            if (userOne)
+            }
+            if (userOne) {
                 return findChat(false, user);
+            }
             return null;
-        } catch (ParseException e) {
-            Toast.makeText(context, "Error searching!", Toast.LENGTH_SHORT).show();
+        } catch (ParseException ignored) {
         }
         return null;
     }

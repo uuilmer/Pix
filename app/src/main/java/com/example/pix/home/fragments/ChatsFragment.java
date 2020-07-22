@@ -26,6 +26,9 @@ import java.util.List;
 
 public class ChatsFragment extends Fragment {
 
+    private List<Chat> chats;
+    private ChatsAdapter chatsAdapter;
+
     public ChatsFragment() {
         // Required empty public constructor
     }
@@ -53,8 +56,8 @@ public class ChatsFragment extends Fragment {
 
         // Get a List of this User's Chats and create an Adapter for it
         try {
-            List<Chat> chats = Chat.getChats(ParseUser.getCurrentUser(), 0);
-            ChatsAdapter chatsAdapter = new ChatsAdapter(getContext(), chats);
+            chats = Chat.getChats(ParseUser.getCurrentUser(), 0);
+            chatsAdapter = new ChatsAdapter(getContext(), chats);
             rvChats.setAdapter(chatsAdapter);
 
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
@@ -80,6 +83,19 @@ public class ChatsFragment extends Fragment {
             Log.e("Error", "Error getting List of Chats", e);
             Toast.makeText(getContext(), "Error retrieving chats", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        chats.clear();
+        try {
+            Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
+                chats.addAll(objects);
+                chatsAdapter.notifyDataSetChanged();
+            });
+        } catch (ParseException e) {
+            Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
+        }
     }
 }

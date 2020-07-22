@@ -1,7 +1,6 @@
 package com.example.pix.home.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -17,7 +16,6 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.PixelCopy;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,24 +32,22 @@ import com.example.pix.chat.ChatFragment;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.adapters.SearchAdapter;
 import com.example.pix.home.utils.CameraPreview;
-import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ComposeFragment extends Fragment {
 
-    ChatActivity mActivity;
+    private ChatActivity mActivity;
     public static ParseFile image;
+    private final int[] currCamera = new int[1];
+    private final Camera[] c = new Camera[1];
+    private final CameraPreview[] preview = new CameraPreview[1];
+    private FrameLayout frameLayout;
+    private Button take;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -66,12 +62,6 @@ public class ComposeFragment extends Fragment {
             System.exit(0);
         }
     }
-
-    final int[] currCamera = new int[1];
-    final Camera[] c = new Camera[1];
-    final CameraPreview[] preview = new CameraPreview[1];
-    FrameLayout frameLayout;
-    Button take;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -103,10 +93,12 @@ public class ComposeFragment extends Fragment {
                 public boolean onDoubleTap(MotionEvent e) {
                     c[0].stopPreview();
                     c[0].release();
-                    if (currCamera[0] == Camera.CameraInfo.CAMERA_FACING_FRONT)
+                    if (currCamera[0] == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                         currCamera[0] = Camera.CameraInfo.CAMERA_FACING_BACK;
-                    else
+                    }
+                    else {
                         currCamera[0] = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                    }
                     c[0] = Camera.open(currCamera[0]);
                     c[0].setDisplayOrientation(90);
                     preview[0] = new CameraPreview(getContext(), c[0]);
@@ -144,7 +136,7 @@ public class ComposeFragment extends Fragment {
 
                 List<ParseUser> results = new ArrayList<>();
                 // Tell the adapter whether this adapter will need to handle saved pics(New Snap from ComposeFragment)
-                SearchAdapter adapter = new SearchAdapter(false, getContext(), results);
+                SearchAdapter adapter = new SearchAdapter(true, getContext(), results);
                 rvResults.setAdapter(adapter);
                 rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -156,7 +148,6 @@ public class ComposeFragment extends Fragment {
                     public boolean onQueryTextSubmit(String s) {
                         ParseQuery<ParseUser> q = ParseQuery.getQuery(ParseUser.class);
                         q.whereStartsWith("username", s);
-                        Toast.makeText(getContext(), "one", Toast.LENGTH_SHORT).show();
                         q.findInBackground((objects, e) -> {
                             if (e != null) {
                                 Toast.makeText(getContext(), "Error searching!", Toast.LENGTH_SHORT).show();
@@ -171,17 +162,17 @@ public class ComposeFragment extends Fragment {
 
                     @Override
                     public boolean onQueryTextChange(String s) {
-                        Toast.makeText(getContext(), "change", Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 });
-            } else
+            } else {
                 // Case where this ComposeFragment was called from ChatActivity so we know who to send it to
                 // thus no need for popup
                 getParentFragmentManager()
                         .beginTransaction()
                         .replace(R.id.friend_container, new ChatFragment(image))
                         .commit();
+            }
         };
 
         // When we take a pic, do the above ^
@@ -203,8 +194,9 @@ public class ComposeFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof ChatActivity)
+        if (context instanceof ChatActivity) {
             mActivity = (ChatActivity) context;
+        }
     }
 
     @Override

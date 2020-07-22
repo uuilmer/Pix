@@ -23,14 +23,9 @@ import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.pix.R;
-import com.example.pix.home.activities.HomeActivity;
-import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.adapters.SearchAdapter;
-import com.example.pix.home.models.Chat;
 import com.example.pix.login.LoginActivity;
-import com.parse.FindCallback;
-import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
@@ -49,21 +44,22 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    SpotifyAppRemote mSpotifyAppRemote;
-    List<Fragment> fragments;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
+        SpotifyAppRemote mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
 
         // When we click on the edit profile Toolbar button, replace this screen with a ProfileFragment
-        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(view12 -> getActivity().getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                .addToBackStack("stack")
-                .replace(R.id.home_profile, new ProfileFragment())
-                .commit());
+        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(view12 -> {
+            getActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
+                    .addToBackStack("stack")
+                    .replace(R.id.home_profile, new ProfileFragment())
+                    .commit();
+        });
 
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
@@ -95,7 +91,6 @@ public class HomeFragment extends Fragment {
                 public boolean onQueryTextSubmit(String s) {
                     ParseQuery<ParseUser> q = ParseQuery.getQuery(ParseUser.class);
                     q.whereStartsWith("username", s);
-                    Toast.makeText(getContext(), "one", Toast.LENGTH_SHORT).show();
                     q.findInBackground((objects, e) -> {
                         if (e != null) {
                             Toast.makeText(getContext(), "Error searching!", Toast.LENGTH_SHORT).show();
@@ -110,14 +105,13 @@ public class HomeFragment extends Fragment {
 
                 @Override
                 public boolean onQueryTextChange(String s) {
-                    Toast.makeText(getContext(), "change", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             });
 
         });
 
-        fragments = new ArrayList<>();
+        List<Fragment> fragments = new ArrayList<>();
         List<String> fragmentNames = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         fragments.add(new ChatsFragment());
@@ -154,4 +148,8 @@ public class HomeFragment extends Fragment {
         viewPager.setCurrentItem(1);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 }
