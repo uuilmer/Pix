@@ -19,6 +19,7 @@ import com.example.pix.R;
 import com.example.pix.chat.ChatActivity;
 import com.example.pix.home.models.Chat;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
@@ -34,6 +35,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         this.context = context;
         this.users = users;
     }
+
     public SearchAdapter(boolean newPic, Context context, List<ParseUser> users) {
         this.context = context;
         this.users = users;
@@ -89,7 +91,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     i.putExtra("newPic", newPic);
 
                 // If we couldnt find an existing CHat, make a new one
-                if(chat == null){
+                if (chat == null) {
                     Chat newChat = new Chat();
                     newChat.setUser(ParseUser.getCurrentUser());
                     newChat.setFriend(user);
@@ -102,12 +104,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 i.putExtra("chat", chat.getObjectId());
                 context.startActivity(i);
             });
-            Glide.with(context)
-                    .load(user
-                            .getParseFile("profile")
-                            .getUrl())
-                    .circleCrop()
-                    .into(this.ivProfile);
+            ParseFile pic = user.getParseFile("profile");
+            if (pic != null)
+                Glide.with(context)
+                        .load(pic
+                                .getUrl())
+                        .circleCrop()
+                        .into(this.ivProfile);
             this.tvName.setText("" + user.getUsername());
             this.tvStatus.setVisibility(View.GONE);
             this.tvTime.setVisibility(View.GONE);
@@ -116,17 +119,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     // Note: userOne and userTwo in Chat table is both people in the chat in no particular order,
     // this we need to check both cases:
-        // User is userOne and friend is userTwo
-        // friend is userOne and user is userTwo
-    private Chat findChat(boolean userOne, ParseUser user){
+    // User is userOne and friend is userTwo
+    // friend is userOne and user is userTwo
+    private Chat findChat(boolean userOne, ParseUser user) {
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.include("userOne");
         q.include("userTwo");
-        if(userOne) {
+        if (userOne) {
             q.whereEqualTo("userOne", ParseUser.getCurrentUser());
             q.whereEqualTo("userTwo", user);
-        }
-        else{
+        } else {
             q.whereEqualTo("userOne", user);
             q.whereEqualTo("userTwo", ParseUser.getCurrentUser());
         }
@@ -134,7 +136,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             Chat res = q.getFirst();
             if (res != null)
                 return res;
-            if(userOne)
+            if (userOne)
                 return findChat(false, user);
             return null;
         } catch (ParseException e) {
