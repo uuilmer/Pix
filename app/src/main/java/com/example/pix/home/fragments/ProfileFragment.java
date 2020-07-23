@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -59,21 +60,16 @@ public class ProfileFragment extends Fragment {
 
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
-        (view.findViewById(R.id.profile_back)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getActivity().onBackPressed();
-            }
-        });
+        (view.findViewById(R.id.profile_back)).setOnClickListener(view13 -> getParentFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.home_profile, HomeActivity.homeFragment)
+                .commit());
 
-        (view.findViewById(R.id.profile_signout)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ParseUser.logOut();
-                Intent i = new Intent(getActivity(), LoginActivity.class);
-                getActivity().startActivity(i);
-                getActivity().finish();
-            }
+        (view.findViewById(R.id.profile_signout)).setOnClickListener(view12 -> {
+            ParseUser.logOut();
+            Intent i = new Intent(getActivity(), LoginActivity.class);
+            getActivity().startActivity(i);
+            getActivity().finish();
         });
         LinearLayout selectNewPic = view.findViewById(R.id.profile_change_pic);
         // When we click the plus, go to add a pic

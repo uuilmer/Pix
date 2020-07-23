@@ -45,8 +45,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                        .addToBackStack("stack")
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                         .replace(R.id.home_profile, new ProfileFragment())
                         .commit();
             }
