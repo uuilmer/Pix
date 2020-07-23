@@ -31,8 +31,11 @@ import java.io.File;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ProfileFragment extends Fragment {
+
+    private ImageView profile;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -50,8 +53,6 @@ public class ProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
-    ImageView profile;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -66,14 +67,11 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        (view.findViewById(R.id.profile_signout)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ParseUser.logOut();
-                Intent i = new Intent(getActivity(), LoginActivity.class);
-                getActivity().startActivity(i);
-                getActivity().finish();
-            }
+        (view.findViewById(R.id.profile_signout)).setOnClickListener(view12 -> {
+            ParseUser.logOut();
+            Intent i = new Intent(getActivity(), LoginActivity.class);
+            getActivity().startActivity(i);
+            getActivity().finish();
         });
         LinearLayout selectNewPic = view.findViewById(R.id.profile_change_pic);
         // When we click the plus, go to add a pic
@@ -88,7 +86,7 @@ public class ProfileFragment extends Fragment {
         // Load profile pic
         Glide.with(getContext())
                 .load(ParseUser.getCurrentUser()
-                        .getParseFile("profile").getUrl())
+                        .getParseFile(USER_PROFILE_CODE).getUrl())
                 .circleCrop()
                 .into(profile);
 
@@ -125,7 +123,7 @@ public class ProfileFragment extends Fragment {
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
 
-                ParseUser.getCurrentUser().put("profile", toSave);
+                ParseUser.getCurrentUser().put(USER_PROFILE_CODE, toSave);
                 ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {

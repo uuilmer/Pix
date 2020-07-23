@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.adapters.MessageAdapter;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.fragments.ComposeFragment;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
@@ -41,25 +42,33 @@ import java.io.InputStream;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
+
+    public static final int RESULT_LOAD_IMG = 100;
+    public static final int REQUEST_PERM = 101;
+    private ImageView ivNewPic;
+    private ParseFile newPic;
+    private MessageAdapter messageAdapter;
+    private List<Message> messages;
+    private RecyclerView rvMessages;
+    private EditText etText;
+    private Chat chat;
+    private ImageView ivPictures;
+
+    public ChatFragment() {
+    }
+
+    public ChatFragment(ParseFile parseFile) {
+        this.newPic = parseFile;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
-
-    public static final int RESULT_LOAD_IMG = 100;
-    public static final int REQUEST_PERM = 101;
-    ImageView ivNewPic;
-    ParseFile newPic;
-    MessageAdapter messageAdapter;
-    List<Message> messages;
-    RecyclerView rvMessages;
-    EditText etText;
-    Chat chat;
-    ImageView ivPictures;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -81,12 +90,35 @@ public class ChatFragment extends Fragment {
         ivPictures = view.findViewById(R.id.chat_pictures);
         ivNewPic = view.findViewById(R.id.chat_image);
 
+        // If we click the camera, go to the ComposeFragment
+        ivCamera.setOnClickListener(view1 -> {
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.friend_container, new ComposeFragment())
+                    .commit();
+        });
+
         ivBack.setOnClickListener(view1 -> getActivity().finish());
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
+        if (newPic != null) {
+            newPic.saveInBackground((SaveCallback) e -> {
+                if (e != null) {
+                    Toast.makeText(getContext(), "Error sending pic", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Message m = new Message();
+                m.setPic(newPic);
+                m.setFrom(ParseUser.getCurrentUser());
+                m.setTo(friend);
+                m.setChat(chat);
+                saveMessage(m);
+            });
+        }
+
         // When we click the plus, go to add a pic
-        ivPictures.setOnClickListener(view1 -> {
+        ivPictures.setOnClickListener(unusedView -> {
             Intent i = new Intent(Intent.ACTION_PICK);
             i.setType("image/*");
             startActivityForResult(i, RESULT_LOAD_IMG);
@@ -95,11 +127,12 @@ public class ChatFragment extends Fragment {
         // Get this friend's profile pic
         ParseFile profile;
         try {
-            profile = friend.fetchIfNeeded().getParseFile("profile");
+            profile = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
             Glide.with(getActivity()).load(profile.getUrl()).circleCrop().into(ivProfile);
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
+
 
         tvName.setText("" + friend.getUsername());
 
@@ -115,7 +148,7 @@ public class ChatFragment extends Fragment {
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
                 @Override
-                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         chat.getMessagesInBackground(page, ParseUser.getCurrentUser(), (objects, e) -> {
                             messages.addAll(objects);
@@ -150,9 +183,10 @@ public class ChatFragment extends Fragment {
                             newMessage.setPic(newPic);
                             saveMessage(newMessage);
                         });
-                    } else
+                    } else {
                         // Case where there is no picture
                         saveMessage(newMessage);
+                    }
                     return true;
                 }
                 return false;

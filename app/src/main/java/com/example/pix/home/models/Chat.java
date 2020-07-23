@@ -16,6 +16,7 @@ import java.util.List;
 public class Chat extends ParseObject {
 
     public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+    public static final String USER_PROFILE_CODE = "profile";
     public static final String USER_ONE = "userOne";
     public static final String USER_TWO = "userTwo";
     public static final int NUM_PER_PAGE = 20;
@@ -49,6 +50,7 @@ public class Chat extends ParseObject {
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
+        res.orderByDescending("createdAt");
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
         return res.find();
@@ -68,6 +70,7 @@ public class Chat extends ParseObject {
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
+        res.orderByDescending("createdAt");
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
         res.findInBackground(handler);
@@ -81,12 +84,14 @@ public class Chat extends ParseObject {
         // Maybe make a new column to keep track of this status as a number?
         int status = getInt("status");
         Message latestMessage = getFirstMessage();
-        if (latestMessage == null)
-            return "New chat!";
+
+        if (latestMessage == null) return "New chat!";
+
         boolean userSentThis = latestMessage.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
         // If the current user sent this message, return either opened or delivered
-        if (userSentThis)
-            return statuses[1 + status];
+
+        if (userSentThis) return statuses[1 + status];
+
         // Else return opened or new chat
         return statuses[1 - status];
     }
@@ -143,7 +148,7 @@ public class Chat extends ParseObject {
         // If the user that requested these Messages is the one who they were sent to, mark as read
         if (this.getStatus() == 1) {
             ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
-            if(recipient.getObjectId().equals(requester.getObjectId())) {
+            if (recipient.getObjectId().equals(requester.getObjectId())) {
                 this.setStatus(0);
                 this.save();
             }
@@ -163,7 +168,7 @@ public class Chat extends ParseObject {
 
         if (this.getStatus() == 1) {
             ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
-            if(recipient.getObjectId().equals(requester.getObjectId())) {
+            if (recipient.getObjectId().equals(requester.getObjectId())) {
                 this.setStatus(0);
                 this.save();
             }

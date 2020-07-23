@@ -22,8 +22,8 @@ import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
-    Context context;
-    List<Message> messages;
+    private Context context;
+    private List<Message> messages;
     // Commented out code is attempt to combine two consecutive messages by the same sender into one
     //List<ViewHolder> viewHolders;
 
@@ -50,13 +50,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         return messages.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    protected static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name;
-        TextView text;
-        ViewGroup contentPics;
-        Message message;
-        ImageView contentPic;
+        private TextView name;
+        private TextView text;
+        private ViewGroup contentPics;
+        private Message message;
+        private ImageView contentPic;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -94,7 +94,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            this.text.setText("" + message.getText());
+            this.text.setVisibility(View.GONE);
+            if(message.getText() != null && !message.getText().equals("")) {
+                this.text.setVisibility(View.VISIBLE);
+                this.text.setText("" + message.getText());
+            }
+
 
             ParseFile pic = message.getPic();
             if (pic != null) {
