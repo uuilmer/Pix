@@ -43,9 +43,9 @@ public class ComposeFragment extends Fragment {
 
     private ChatActivity mActivity;
     public static ParseFile image;
-    private final int[] currCamera = new int[1];
-    private final Camera[] c = new Camera[1];
-    private final CameraPreview[] preview = new CameraPreview[1];
+    private int currCamera;
+    private Camera camera;
+    private CameraPreview preview;
     private FrameLayout frameLayout;
     private Button take;
 
@@ -75,15 +75,15 @@ public class ComposeFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setup() {
-        currCamera[0] = Camera.CameraInfo.CAMERA_FACING_FRONT;
-        c[0] = Camera.open(currCamera[0]);
+        currCamera = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        camera = Camera.open(currCamera);
 
         // Set as Portrait
-        c[0].setDisplayOrientation(90);
+        camera.setDisplayOrientation(90);
 
         // Create the preview and set as the FrameLayout
-        preview[0] = new CameraPreview(getContext(), c[0]);
-        frameLayout.addView(preview[0]);
+        preview = new CameraPreview(getContext(), camera);
+        frameLayout.addView(preview);
 
         // When we double-tap, create a new preview with the only difference being the Camera source, and set it as our FrameLayout's only child
         frameLayout.setOnTouchListener(new View.OnTouchListener() {
@@ -91,19 +91,19 @@ public class ComposeFragment extends Fragment {
             GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onDoubleTap(MotionEvent e) {
-                    c[0].stopPreview();
-                    c[0].release();
-                    if (currCamera[0] == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        currCamera[0] = Camera.CameraInfo.CAMERA_FACING_BACK;
+                    camera.stopPreview();
+                    camera.release();
+                    if (currCamera == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        currCamera = Camera.CameraInfo.CAMERA_FACING_BACK;
                     }
                     else {
-                        currCamera[0] = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                        currCamera = Camera.CameraInfo.CAMERA_FACING_FRONT;
                     }
-                    c[0] = Camera.open(currCamera[0]);
-                    c[0].setDisplayOrientation(90);
-                    preview[0] = new CameraPreview(getContext(), c[0]);
+                    camera = Camera.open(currCamera);
+                    camera.setDisplayOrientation(90);
+                    preview = new CameraPreview(getContext(), camera);
                     frameLayout.removeAllViews();
-                    frameLayout.addView(preview[0]);
+                    frameLayout.addView(preview);
                     return super.onDoubleTap(e);
                 }
             });
@@ -176,7 +176,7 @@ public class ComposeFragment extends Fragment {
         };
 
         // When we take a pic, do the above ^
-        take.setOnClickListener(view1 -> c[0].takePicture(() -> {
+        take.setOnClickListener(view1 -> camera.takePicture(() -> {
 
         }, null, callback));
     }
