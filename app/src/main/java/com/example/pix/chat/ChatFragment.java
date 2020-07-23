@@ -42,12 +42,12 @@ import java.io.InputStream;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
 
     public static final int RESULT_LOAD_IMG = 100;
     public static final int REQUEST_PERM = 101;
-    public static final String USER_PROFILE_CODE = "profile";
     private ImageView ivNewPic;
     private ParseFile newPic;
     private MessageAdapter messageAdapter;
@@ -118,7 +118,7 @@ public class ChatFragment extends Fragment {
         }
 
         // When we click the plus, go to add a pic
-        ivPictures.setOnClickListener(view1 -> {
+        ivPictures.setOnClickListener(unusedView -> {
             Intent i = new Intent(Intent.ACTION_PICK);
             i.setType("image/*");
             startActivityForResult(i, RESULT_LOAD_IMG);
@@ -148,7 +148,7 @@ public class ChatFragment extends Fragment {
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
                 @Override
-                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         chat.getMessagesInBackground(page, ParseUser.getCurrentUser(), (objects, e) -> {
                             messages.addAll(objects);

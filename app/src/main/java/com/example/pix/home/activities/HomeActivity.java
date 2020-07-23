@@ -42,7 +42,7 @@ public class HomeActivity extends AppCompatActivity {
 
         /*LinearLayout homeContainer = findViewById(R.id.home_container);
 
-        View.OnTouchListener onTouchListener = (view, motionEvent) -> {
+        View.OnTouchListener onTouchListener = (unusedView, motionEvent) -> {
             switch(motionEvent.getAction())
             {
                 case MotionEvent.ACTION_DOWN:

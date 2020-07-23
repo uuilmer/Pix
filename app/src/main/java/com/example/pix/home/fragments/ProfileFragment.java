@@ -30,8 +30,8 @@ import com.parse.SaveCallback;
 import java.io.File;
 
 import static android.app.Activity.RESULT_OK;
-import static com.example.pix.chat.ChatFragment.USER_PROFILE_CODE;
 import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ProfileFragment extends Fragment {
 

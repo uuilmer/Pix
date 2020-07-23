@@ -12,9 +12,9 @@ import android.os.Bundle;
 import com.example.pix.R;
 import com.example.pix.home.fragments.ComposeFragment;
 
-public class ChatActivity extends AppCompatActivity {
+import static com.example.pix.home.adapters.SearchAdapter.NEW_PIC_CODE;
 
-    public static final String NEW_PIC_CODE = "newPic";
+public class ChatActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override

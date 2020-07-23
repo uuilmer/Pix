@@ -16,6 +16,7 @@ import java.util.List;
 public class Chat extends ParseObject {
 
     public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+    public static final String USER_PROFILE_CODE = "profile";
     public static final String USER_ONE = "userOne";
     public static final String USER_TWO = "userTwo";
     public static final int NUM_PER_PAGE = 20;

@@ -23,13 +23,13 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
-import static com.example.pix.chat.ChatActivity.NEW_PIC_CODE;
-import static com.example.pix.chat.ChatFragment.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_ONE;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_TWO;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
+    public static final String NEW_PIC_CODE = "newPic";
     private Context context;
     private List<ParseUser> users;
     private boolean newPic;
@@ -119,8 +119,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             this.tvTime.setVisibility(View.GONE);
         }
     }
+
     // Try to find a Chat with the given ordering of the two Users
-    private Chat findChatHelper(ParseUser userOne, ParseUser userTwo){
+    private Chat findChatHelper(ParseUser userOne, ParseUser userTwo) {
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.include(USER_ONE);
         q.include(USER_TWO);
@@ -132,13 +133,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             return null;
         }
     }
+
     // Note: userOne and userTwo in Chat table is both people in the chat in no particular order,
     // this we need to check both cases:
     // User is userOne and friend is userTwo
     // friend is userOne and user is userTwo
     private Chat findChat(ParseUser user) {
         Chat chat = findChatHelper(user, ParseUser.getCurrentUser());
-        if(chat != null) return chat;
+        if (chat != null) return chat;
         return findChatHelper(ParseUser.getCurrentUser(), user);
     }
 }

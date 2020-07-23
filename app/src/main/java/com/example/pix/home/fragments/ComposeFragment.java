@@ -109,7 +109,7 @@ public class ComposeFragment extends Fragment {
             });
 
             @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
+            public boolean onTouch(View unusedView, MotionEvent motionEvent) {
                 // Use the Object to handle double-taps
                 gestureDetector.onTouchEvent(motionEvent);
                 return true;

@@ -66,7 +66,7 @@ public class ChatsFragment extends Fragment {
             // When we scroll, get the next batch of chats
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
                 @Override
-                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         Chat.getChatsInBackground(ParseUser.getCurrentUser(), page, (objects, e) -> {
                             chats.addAll(objects);

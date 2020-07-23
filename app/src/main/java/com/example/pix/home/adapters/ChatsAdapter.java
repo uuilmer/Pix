@@ -24,7 +24,8 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
-import static com.example.pix.chat.ChatFragment.USER_PROFILE_CODE;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
+
 
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
 
@@ -73,13 +74,10 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
 
         public void bind(Chat chat) {
             this.tvPix.setText("" + chat.getPix() + "P");
-            this.llSelect.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(context, ChatActivity.class);
-                    i.putExtra("chat", chat.getObjectId());
-                    context.startActivity(i);
-                }
+            this.llSelect.setOnClickListener(unusedView -> {
+                Intent i = new Intent(context, ChatActivity.class);
+                i.putExtra("chat", chat.getObjectId());
+                context.startActivity(i);
             });
             try {
                 ParseUser friend = chat.getFriend(ParseUser.getCurrentUser()).fetchIfNeeded();
