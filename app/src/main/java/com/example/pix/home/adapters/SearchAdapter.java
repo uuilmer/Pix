@@ -87,7 +87,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 Intent i = new Intent(context, ChatActivity.class);
 
                 // Look to see if a Chat with the selected User already exists
-                Chat chat = findChat(true, user);
+                Chat chat = findChat(user);
 
                 // If we indicated that this Adapter was made with intent to send pic,
                 if (newPic) i.putExtra(NEW_PIC_CODE, newPic);
@@ -119,33 +119,26 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             this.tvTime.setVisibility(View.GONE);
         }
     }
-
+    // Try to find a Chat with the given ordering of the two Users
+    private Chat findChatHelper(ParseUser userOne, ParseUser userTwo){
+        ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
+        q.include(USER_ONE);
+        q.include(USER_TWO);
+        q.whereEqualTo(USER_ONE, userOne);
+        q.whereEqualTo(USER_TWO, userTwo);
+        try {
+            return q.getFirst();
+        } catch (ParseException e) {
+            return null;
+        }
+    }
     // Note: userOne and userTwo in Chat table is both people in the chat in no particular order,
     // this we need to check both cases:
     // User is userOne and friend is userTwo
     // friend is userOne and user is userTwo
-    private Chat findChat(boolean userOne, ParseUser user) {
-        ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
-        q.include(USER_ONE);
-        q.include(USER_TWO);
-        if (userOne) {
-            q.whereEqualTo(USER_ONE, ParseUser.getCurrentUser());
-            q.whereEqualTo(USER_TWO, user);
-        } else {
-            q.whereEqualTo(USER_ONE, user);
-            q.whereEqualTo(USER_TWO, ParseUser.getCurrentUser());
-        }
-        try {
-            Chat res = q.getFirst();
-            if (res != null) {
-                return res;
-            }
-            if (userOne) {
-                return findChat(false, user);
-            }
-            return null;
-        } catch (ParseException ignored) {
-        }
-        return null;
+    private Chat findChat(ParseUser user) {
+        Chat chat = findChatHelper(user, ParseUser.getCurrentUser());
+        if(chat != null) return chat;
+        return findChatHelper(ParseUser.getCurrentUser(), user);
     }
 }
