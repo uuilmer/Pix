@@ -25,6 +25,8 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
+
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
 
     Context context;
@@ -82,7 +84,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             });
             try {
                 ParseUser friend = chat.getFriend(ParseUser.getCurrentUser()).fetchIfNeeded();
-                ParseFile pic = friend.getParseFile("profile");
+                ParseFile pic = friend.getParseFile(USER_PROFILE_CODE);
                 if (pic != null)
                     Glide.with(context)
                             .load(pic

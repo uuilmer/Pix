@@ -33,11 +33,14 @@ import java.io.File;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
+import static com.example.pix.home.models.Chat.USER_PIX;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ProfileFragment extends Fragment {
 
-    ParseUser user;
-    boolean isOwner;
+    private ParseUser user;
+    private boolean isOwner;
+    private ImageView profile;
 
     public ProfileFragment(ParseUser user) {
         this.user = user;
@@ -61,8 +64,6 @@ public class ProfileFragment extends Fragment {
             return inflater.inflate(R.layout.fragment_friend, container, false);
     }
 
-    ImageView profile;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -76,7 +77,7 @@ public class ProfileFragment extends Fragment {
         // Load profile pic
         Glide.with(getContext())
                 .load(user
-                        .getParseFile("profile").getUrl())
+                        .getParseFile(USER_PROFILE_CODE).getUrl())
                 .circleCrop()
                 .into(profile);
 
@@ -134,7 +135,7 @@ public class ProfileFragment extends Fragment {
         }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        pix.setText("" + user.getInt("pix"));
+        pix.setText("" + user.getInt(USER_PIX));
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
@@ -150,7 +151,7 @@ public class ProfileFragment extends Fragment {
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
 
-                ParseUser.getCurrentUser().put("profile", toSave);
+                ParseUser.getCurrentUser().put(USER_PROFILE_CODE, toSave);
                 ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {

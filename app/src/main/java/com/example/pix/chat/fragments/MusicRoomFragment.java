@@ -40,7 +40,10 @@ public class MusicRoomFragment extends Fragment {
     private ParseQuery<MusicRoom> q;
     public static boolean isOwner;
     private ImageView playingGif;
-    private final MusicRoom[] musicRoom = new MusicRoom[1];
+    private MusicRoom musicRoom;
+    private boolean isPlayingLocally;
+    private Song nowPlayingInParse;
+    private boolean isPlayingInParse;
 
     public MusicRoomFragment(ParseUser ownerOfRoom) {
         this.ownerOfRoom = ownerOfRoom;
@@ -64,7 +67,7 @@ public class MusicRoomFragment extends Fragment {
         q.whereEqualTo("user", ownerOfRoom);
 
         try {
-            musicRoom[0] = q.getFirst();
+            musicRoom = q.getFirst();
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Error getting Current Song!", Toast.LENGTH_SHORT).show();
@@ -74,13 +77,13 @@ public class MusicRoomFragment extends Fragment {
             I can even make it so that in the future
             a User need to pay to have their own MusicRoom. */
         try {
-            if (musicRoom[0] == null) {
-                musicRoom[0] = new MusicRoom();
-                musicRoom[0].setUser(ownerOfRoom);
-                musicRoom[0].save();
+            if (musicRoom == null) {
+                musicRoom = new MusicRoom();
+                musicRoom.setUser(ownerOfRoom);
+                musicRoom.save();
             }
             // Check to see if this User is the owner of the MusicRoom
-            isOwner = musicRoom[0].getUser().fetch().getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
+            isOwner = musicRoom.getUser().fetch().getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Error creating MusicRoom", Toast.LENGTH_SHORT).show();
@@ -93,36 +96,37 @@ public class MusicRoomFragment extends Fragment {
         playingGif.setVisibility(View.GONE);
 
         // Try to get the current Song
-        nowPlayingInParse[0] = musicRoom[0].getCurrentSong();
+        nowPlayingInParse = musicRoom.getCurrentSong();
 
         // Case where the current user needs to create a Song for this MusicRoom(None playing)
-        if (nowPlayingInParse[0] == null) {
+        if (nowPlayingInParse == null) {
             seekSong();
         }
         // Case where there is already a Song playing (This is mainly for listeners)
-        else
-            setup(musicRoom);
+        else {
+            setup();
+        }
     }
 
     // Method where this MusicRoom has no Song, and we therefore need to create one
     private void seekSong() {
         // If this User is the owner of the room, he can create on himself and move on
         if (isOwner) {
-            nowPlayingInParse[0] = new Song();
-            nowPlayingInParse[0].setPlaying(false);
-            nowPlayingInParse[0].saveInBackground(e -> {
+            nowPlayingInParse = new Song();
+            nowPlayingInParse.setPlaying(false);
+            nowPlayingInParse.saveInBackground(e -> {
                 if (e != null) {
                     Toast.makeText(getContext(), "Error starting song!", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 // The MusicRoom needs to point at this new Song
-                musicRoom[0].setCurrentSong(nowPlayingInParse[0]);
-                musicRoom[0].saveInBackground(e1 -> {
+                musicRoom.setCurrentSong(nowPlayingInParse);
+                musicRoom.saveInBackground(e1 -> {
                     if (e1 != null) {
                         Toast.makeText(getContext(), "Error updating MusicRoom!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    setup(musicRoom);
+                    setup();
                 });
             });
             // If the user is a listener and there is no Song, they must wait until the MusicRoom has a Song
@@ -131,10 +135,10 @@ public class MusicRoomFragment extends Fragment {
                 @Override
                 public void run() {
                     try {
-                        musicRoom[0] = q.getFirst();
-                        nowPlayingInParse[0] = musicRoom[0].getCurrentSong();
-                        if (nowPlayingInParse[0] != null) {
-                            setup(musicRoom);
+                        musicRoom = q.getFirst();
+                        nowPlayingInParse = musicRoom.getCurrentSong();
+                        if (nowPlayingInParse != null) {
+                            setup();
                             this.cancel();
                         }
                     } catch (ParseException e) {
@@ -146,140 +150,149 @@ public class MusicRoomFragment extends Fragment {
             }, 0, 50);
     }
 
-    final boolean[] isPlayingLocally = new boolean[1];
-
-    private void setup(final MusicRoom[] musicRoom) {
+    private void setup() {
         try {
-            nowPlayingInParse[0].fetchIfNeeded();
+            nowPlayingInParse.fetchIfNeeded();
 
-            isPlayingLocally[0] = false;
+            isPlayingLocally = false;
 
             // Setup proper image
             if (listenerTimer != null) {
-                isPlayingLocally[0] = true;
+                isPlayingLocally = true;
                 ivPlay.setImageResource(R.drawable.musicroom_pause);
                 playingGif.setVisibility(View.VISIBLE);
-            } else
+            } else {
                 ivPlay.setImageResource(R.drawable.musicroom_play);
-
-            ivPlay.setOnClickListener(view1 -> startSync(musicRoom));
+            }
+            ivPlay.setOnClickListener(view1 -> startSync());
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Cannot set up Stream!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    final Song[] nowPlayingInParse = new Song[1];
-
-    private void startSync(final MusicRoom[] musicRoom) {
+    // This method is called whenever the PLAY/PAUSE button is clicked (It starts/stops the stream)
+    private void startSync() {
         // If the nowPlayingInParse Song in Parse for this db is null, we must have stopped before
         // (See ending ALL CAPS of this method)
-        if (nowPlayingInParse[0] == null) {
+        if (nowPlayingInParse == null) {
             Toast.makeText(getContext(), "Tap again to start Stream!", Toast.LENGTH_SHORT).show();
             // Go back to somehow get a valid Song
             seekSong();
             return;
         }
-        // If the Song was not playing, begin either a stream or begin listening to the stream
-        if (!isPlayingLocally[0]) {
-            ivPlay.setImageResource(R.drawable.musicroom_pause);
-            playingGif.setVisibility(View.VISIBLE);
-            try {
-                musicRoom[0] = q.getFirst();
-                // Fetch the song that's playing at the moment
-                nowPlayingInParse[0] = musicRoom[0].getCurrentSong().fetch();
 
-                // Case where the User is the owner
-                final boolean[] isPlayingInParse = {nowPlayingInParse[0].isPlaying()};
-                if (isOwner) {
-                    // Check if the song is playing
+        if (!isPlayingLocally) {
+            // If no Song is playing, start playing it(Or streaming it if owner)
+            startStream();
+        } else {
+            // If the Song was playing, stop the stream or stop listening to the stream
+            stopStream();
+        }
+        // Update since we switched whether we are streaming or not
+        isPlayingLocally = !isPlayingLocally;
+    }
 
-                    remote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
-                        // Check if the Song changed, in which case we update it in Parse
-                        if (!playerState.track.uri.equals(nowPlayingInParse[0].getURI())) {
-                            nowPlayingInParse[0].setURI(playerState.track.uri);
-                            nowPlayingInParse[0].saveInBackground(e -> {
-                                if (e != null)
-                                    Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                        // Check if the playing/paused status changed, if so update it
-                        if (playerState.isPaused == isPlayingInParse[0]) {
-                            isPlayingInParse[0] = !playerState.isPaused;
-                            nowPlayingInParse[0].setPlaying(isPlayingInParse[0]);
-                            nowPlayingInParse[0].saveInBackground(e -> {
-                                if (e != null)
-                                    Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    });
-                    // Case where User is a listener
-                } else {
-                    // Check if the song is currently playing
-                    remote.getPlayerApi().play(nowPlayingInParse[0].getURI());
-                    if (!isPlayingInParse[0])
-                        remote.getPlayerApi().pause();
-                    // Every fixed interval, check for updates to Parse
-                    listenerTimer = new Timer();
-                    listenerTimer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            try {
-                                // Update our local Parse objects
-                                musicRoom[0] = q.getFirst();
-                                Song checkForChange = musicRoom[0].getCurrentSong().fetch();
-                                // If the song changes, play this new song
-                                if (!checkForChange.getURI().equals(nowPlayingInParse[0].getURI())) {
-                                    nowPlayingInParse[0] = checkForChange;
-                                    remote.getPlayerApi().play(checkForChange.getURI());
-                                }
-                                // If the song's play/pause status changes, update it with the remote
-                                if (checkForChange.isPlaying() != isPlayingInParse[0]) {
-                                    isPlayingInParse[0] = checkForChange.isPlaying();
-                                    if (isPlayingInParse[0])
-                                        remote.getPlayerApi().resume();
-                                    else
-                                        remote.getPlayerApi().pause();
-                                }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+    private void startStream(){
+        // Start the disk spinning to show that we are streaming/ listening
+        ivPlay.setImageResource(R.drawable.musicroom_pause);
+        playingGif.setVisibility(View.VISIBLE);
+        try {
+            musicRoom = q.getFirst();
+            // Fetch the song that's playing at the moment
+            nowPlayingInParse = musicRoom.getCurrentSong().fetch();
+
+            isPlayingInParse = nowPlayingInParse.isPlaying();
+            // Case where the User is the owner
+            if (isOwner) {
+                // Check if the song is playing
+
+                remote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
+                    // Check if the Song changed, in which case we update it in Parse
+                    if (!playerState.track.uri.equals(nowPlayingInParse.getURI())) {
+                        nowPlayingInParse.setURI(playerState.track.uri);
+                        nowPlayingInParse.saveInBackground(e -> {
+                            if (e != null)
+                                Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                    // Check if the playing/paused status changed, if so update it
+                    if (playerState.isPaused == isPlayingInParse) {
+                        isPlayingInParse = !playerState.isPaused;
+                        nowPlayingInParse.setPlaying(isPlayingInParse);
+                        nowPlayingInParse.saveInBackground(e -> {
+                            if (e != null)
+                                Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+                // Case where User is a listener
+            } else {
+                // Check if the song is currently playing
+                remote.getPlayerApi().play(nowPlayingInParse.getURI());
+                if (!isPlayingInParse)
+                    remote.getPlayerApi().pause();
+                // Every fixed interval, check for updates to Parse
+                listenerTimer = new Timer();
+                listenerTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Update our local Parse objects
+                            musicRoom = q.getFirst();
+                            Song checkForChange = musicRoom.getCurrentSong().fetch();
+                            // If the song changes, play this new song
+                            if (!checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
+                                nowPlayingInParse = checkForChange;
+                                remote.getPlayerApi().play(checkForChange.getURI());
                             }
+                            // If the song's play/pause status changes, update it with the remote
+                            if (checkForChange.isPlaying() != isPlayingInParse) {
+                                isPlayingInParse = checkForChange.isPlaying();
+                                if (isPlayingInParse)
+                                    remote.getPlayerApi().resume();
+                                else
+                                    remote.getPlayerApi().pause();
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
                         }
-                    }, 0, 50);
-                    // If the song this User played is not the same as the one in Parse, they must have manually changed it
-                    // in which case cancel our controls
-                }
+                    }
+                }, 0, 50);
+                // If the song this User played is not the same as the one in Parse, they must have manually changed it
+                // in which case cancel our controls
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopStream(){
+        // Stop the spinning disk since we will no longer be playing/streaming a stream
+        playingGif.setVisibility(View.GONE);
+
+        // If we were listening to a stream via a listenerTimer, stop it
+        if (listenerTimer != null) {
+            listenerTimer.cancel();
+        }
+        // If we were streaming as the owner, stop
+        if (isOwner) {
+            remote.getPlayerApi().subscribeToPlayerState().cancel();
+            try {
+                // Delete the Song that was playing
+                nowPlayingInParse.delete();
+                // Delete the reference to the Song that was playing from the MusicRoom
+                musicRoom.remove("nowPlayingInParse");
+                musicRoom.save();
+                // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
+                // We need this alert to the method because this method is run every time we start/stop the stream,
+                // and we thus need to make sure the Song we use in this method is valid.
+                nowPlayingInParse = null;
             } catch (ParseException e) {
                 e.printStackTrace();
+                Toast.makeText(getContext(), "Error deleting Sync Connection", Toast.LENGTH_SHORT).show();
             }
-            // If the Song was playing, stop the stream or stop listening to the stream
-        } else {
-            Toast.makeText(getContext(), "one", Toast.LENGTH_SHORT).show();
-            playingGif.setVisibility(View.GONE);
-            if (listenerTimer != null) {
-                Toast.makeText(getContext(), "two", Toast.LENGTH_SHORT).show();
-                listenerTimer.cancel();
-            }
-            if (isOwner) {
-                remote.getPlayerApi().subscribeToPlayerState().cancel();
-                try {
-                    // Delete the Song that was playing
-                    nowPlayingInParse[0].delete();
-                    // Delete the reference to the Song that was playing from the MusicRoom
-                    musicRoom[0].remove("nowPlayingInParse");
-                    musicRoom[0].save();
-                    // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
-                    // We need this alert to the method because this method is run every time we start/stop the stream,
-                    // and we thus need to make sure the Song we use in this method is valid.
-                    nowPlayingInParse[0] = null;
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), "Error deleting Sync Connection", Toast.LENGTH_SHORT).show();
-                }
-            }
-            ivPlay.setImageResource(R.drawable.musicroom_play);
         }
-        // Update since we switched
-        isPlayingLocally[0] = !isPlayingLocally[0];
+        ivPlay.setImageResource(R.drawable.musicroom_play);
     }
 }

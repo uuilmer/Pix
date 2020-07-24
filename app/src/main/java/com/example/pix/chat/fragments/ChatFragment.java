@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
 
@@ -96,7 +97,7 @@ public class ChatFragment extends Fragment {
         // Get this friend's profile pic
         ParseFile profile;
         try {
-            profile = friend.fetchIfNeeded().getParseFile("profile");
+            profile = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
             Glide.with(getActivity()).load(profile.getUrl()).circleCrop().into(ivProfile);
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
