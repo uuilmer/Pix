@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -120,7 +121,7 @@ public class ComposeFragment extends Fragment {
         Camera.PictureCallback callback = (bytes, camera) -> {
             image = new ParseFile(bytes);
             if (getActivity() instanceof HomeActivity) {
-                LinearLayout container = getActivity().findViewById(R.id.home_container);
+                ConstraintLayout container = getActivity().findViewById(R.id.home_container);
                 LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View popup = layoutInflater.inflate(R.layout.popup_search, null);
 
