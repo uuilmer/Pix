@@ -44,6 +44,7 @@ public class MusicRoomFragment extends Fragment {
     private boolean isPlayingLocally;
     private Song nowPlayingInParse;
     private boolean isPlayingInParse;
+    public static final String NOW_PLAYING = "nowPlaying";
 
     public MusicRoomFragment(ParseUser ownerOfRoom) {
         this.ownerOfRoom = ownerOfRoom;
@@ -282,7 +283,7 @@ public class MusicRoomFragment extends Fragment {
                 // Delete the Song that was playing
                 nowPlayingInParse.delete();
                 // Delete the reference to the Song that was playing from the MusicRoom
-                musicRoom.remove("nowPlayingInParse");
+                musicRoom.remove(NOW_PLAYING);
                 musicRoom.save();
                 // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
                 // We need this alert to the method because this method is run every time we start/stop the stream,
