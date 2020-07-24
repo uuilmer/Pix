@@ -86,7 +86,7 @@ public class HomeFragment extends Fragment {
                 pagerTabStrip.setTabIndicatorColor(colors.get(position));
                 // Only when not 0 because for some reason, when we are exactly at ComposeFragment(Index 1),
                 // The offset jumps to 0 from 0.9999
-                if(positionOffset != 0) {
+                if (positionOffset != 0) {
                     /*  When we scroll the PagerView, use the offset(The fraction of what index page we are on:
                             Example: ChatsFragment is 0, ComposeFragment is 1, and in between them is 0.5
                         We scale this index up to 255 and assign it to our header's background and the opposite
