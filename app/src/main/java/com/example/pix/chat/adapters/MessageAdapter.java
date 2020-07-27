@@ -70,8 +70,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             Message message = messages.get(position);
 
             // Check if the previous message was sent by the same person, if so there is no need to display the username again
-            if (position > 0) {
-                if (messages.get(position-1).getFrom().getObjectId().equals(message.getFrom().getObjectId())){
+            if (position < messages.size()-1) {
+                if (messages.get(position+1).getFrom().getObjectId().equals(message.getFrom().getObjectId())){
                     this.name.setVisibility(View.GONE);
                 }
             }
