@@ -23,7 +23,7 @@
             android:label="@string/title_activity_home"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".chat.ChatActivity"
+            android:name=".chat.activities.FriendActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".login.LoginActivity">
             <intent-filter>

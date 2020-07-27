@@ -1,4 +1,4 @@
-package com.example.pix.chat;
+package com.example.pix.chat.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,11 +10,13 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.example.pix.R;
+import com.example.pix.chat.fragments.ChatFragment;
+import com.example.pix.home.models.Chat;
 import com.example.pix.home.fragments.ComposeFragment;
 
 import static com.example.pix.home.adapters.SearchAdapter.NEW_PIC_CODE;
 
-public class ChatActivity extends AppCompatActivity {
+public class FriendActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
