@@ -42,9 +42,6 @@ public class ProfileFragment extends Fragment {
     private ParseUser user;
     private boolean isOwner;
 
-    public ProfileFragment() {
-        // Required empty public constructor
-
     public ProfileFragment(ParseUser user) {
         this.user = user;
     }

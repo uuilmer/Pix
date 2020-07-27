@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.ChatActivity;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -84,7 +84,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             this.tvPix.setText("" + user.getInt("pix") + "P");
             this.llSelect.setOnClickListener(view -> {
                 // If we select a result, we will want to go to ChatActivity
-                Intent i = new Intent(context, ChatActivity.class);
+                Intent i = new Intent(context, FriendActivity.class);
 
                 // Look to see if a Chat with the selected User already exists
                 Chat chat = findChat(user);

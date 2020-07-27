@@ -27,8 +27,8 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.example.pix.R;
-import com.example.pix.chat.ChatActivity;
-import com.example.pix.chat.ChatFragment;
+import com.example.pix.chat.fragments.ChatFragment;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.adapters.SearchAdapter;
 import com.example.pix.home.utils.CameraPreview;
@@ -41,7 +41,7 @@ import java.util.List;
 
 public class ComposeFragment extends Fragment {
 
-    private ChatActivity mActivity;
+    private FriendActivity mActivity;
     public static ParseFile image;
     private int currCamera;
     private Camera camera;
@@ -194,8 +194,8 @@ public class ComposeFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof ChatActivity) {
-            mActivity = (ChatActivity) context;
+        if (context instanceof FriendActivity) {
+            mActivity = (FriendActivity) context;
         }
     }
 

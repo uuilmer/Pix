@@ -11,7 +11,6 @@ import android.os.Bundle;
 
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
-import com.example.pix.home.models.Chat;
 import com.example.pix.home.fragments.ComposeFragment;
 
 import static com.example.pix.home.adapters.SearchAdapter.NEW_PIC_CODE;
