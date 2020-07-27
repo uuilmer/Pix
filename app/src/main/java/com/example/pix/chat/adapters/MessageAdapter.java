@@ -24,13 +24,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     private Context context;
     private List<Message> messages;
-    // Commented out code is attempt to combine two consecutive messages by the same sender into one
-    //List<ViewHolder> viewHolders;
 
     public MessageAdapter(Context context, List<Message> messages) {
         this.context = context;
         this.messages = messages;
-        //this.viewHolders = new ArrayList<>();
     }
 
     @NonNull
@@ -42,7 +39,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(messages.get(position)/*, viewHolders, position*/);
+        holder.bind(position, messages);
     }
 
     @Override
@@ -66,28 +63,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.contentPic = itemView.findViewById(R.id.message_content_pic);
         }
 
-        public void bind(Message message/*, List<ViewHolder> viewHolders, int position*/) {
+        public void bind(int position, List<Message> messages) {
             this.contentPic.setVisibility(View.GONE);
+            this.name.setVisibility(View.VISIBLE);
 
-            // Attempted to combine consecutive messages but failed:
+            Message message = messages.get(position);
 
-            /*this.itemView.setVisibility(View.VISIBLE);
-            this.contentPics.removeAllViews();
-            if(!viewHolders.contains(this))
-                viewHolders.add(this);
-            if(position > 0){
-                int currIndex = viewHolders.indexOf(this);
-                ViewHolder previous = viewHolders.get(currIndex -1);
-                while(previous.itemView.getVisibility() == View.GONE && currIndex > 0)
-                    previous = viewHolders.get(--currIndex);
-                Message content = previous.getMessage();
-                if(content.getFrom().equals(ParseUser.getCurrentUser())){
-                    previous.text.setText("" + previous.text.getText().toString() + "\n" + message.getText());
-                    newPic(previous.contentPics, message);
-                    this.itemView.setVisibility(View.GONE);
-                    return;
+            // Check if the previous message was sent by the same person, if so there is no need to display the username again
+            if (position > 0) {
+                if (messages.get(position-1).getFrom().getObjectId().equals(message.getFrom().getObjectId())){
+                    this.name.setVisibility(View.GONE);
                 }
-            }*/
+            }
+
             ParseUser from = message.getFrom();
             try {
                 this.name.setText("" + (from.fetchIfNeeded().getObjectId().equals(ParseUser.getCurrentUser().getObjectId()) ? "Me" : from.fetchIfNeeded().getUsername()));
@@ -95,7 +83,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 e.printStackTrace();
             }
             this.text.setVisibility(View.GONE);
-            if(message.getText() != null && !message.getText().equals("")) {
+            if (message.getText() != null && !message.getText().equals("")) {
                 this.text.setVisibility(View.VISIBLE);
                 this.text.setText("" + message.getText());
             }
@@ -108,24 +96,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             }
 
             this.message = message;
-        }
-        /*private void newPic(ViewGroup viewGroup, Message message){
-            ParseFile pic = message.getPic();
-            if(pic != null) {
-                ImageView newPic = new ImageView(viewGroup.getContext());
-                Glide.with(viewGroup.getContext()).load(pic.getUrl()).into(newPic);
-                newPic.getLayoutParams().height = (int) convertPixelsToDp(80, itemView.getContext());
-                newPic.getLayoutParams().width = (int) convertPixelsToDp(80, itemView.getContext());
-                viewGroup.addView(newPic);
-            }
-        }
-
-        public Message getMessage() {
-            return message;
-        }*/
-
-        public static float convertPixelsToDp(float px, Context context) {
-            return px / ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         }
     }
 }
