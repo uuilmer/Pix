@@ -64,7 +64,7 @@ public class HomeFragment extends Fragment {
         // Set the User profile picture
         ParseFile image = ParseUser.getCurrentUser().getParseFile(USER_PROFILE_CODE);
         if (image != null) {
-            Glide.with(getContext()).load(image).into(profile);
+            Glide.with(getContext()).load(image.getUrl()).circleCrop().into(profile);
         }
 
         ProfileFragment profileFragment = new ProfileFragment(ParseUser.getCurrentUser());

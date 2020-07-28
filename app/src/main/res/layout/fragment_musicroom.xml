@@ -28,12 +28,6 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"/>
 
-            <TextView
-                android:id="@+id/musicroom_pix"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="324" />
-
         </LinearLayout>
 
 
@@ -41,7 +35,7 @@
 
     <ImageView
         android:id="@+id/musicroom_playing"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:layout_width="80dp"
+        android:layout_height="80dp" />
 
 </LinearLayout>

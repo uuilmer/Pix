@@ -8,8 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.transition.AutoTransition;
-import android.transition.Fade;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -32,17 +31,19 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
-import static com.example.pix.home.models.Chat.USER_PIX;
 
 public class ProfileFragment extends Fragment {
 
     private ImageView profile;
     private ParseUser user;
     private boolean isOwner;
+    private Timer timer;
 
     public ProfileFragment(ParseUser user) {
         this.user = user;
@@ -85,7 +86,7 @@ public class ProfileFragment extends Fragment {
 
         // If we have a listenerTimer in MusicRoomFragment, we must make it possible to end it.
         Button stopListening = view.findViewById(R.id.profile_stop);
-        if(MusicRoomFragment.listenerTimer != null){
+        if (MusicRoomFragment.listenerTimer != null) {
             stopListening.setVisibility(View.VISIBLE);
             stopListening.setOnClickListener(view14 -> {
                 MusicRoomFragment.listenerTimer.cancel();
@@ -137,7 +138,16 @@ public class ProfileFragment extends Fragment {
         }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        pix.setText("" + user.getInt(USER_PIX));
+        pix.setText("" + Like.getPix(user));
+
+        // Check every 2 seconds for how many "Pix"(Likes) this person has
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                getActivity().runOnUiThread(() -> pix.setText("" + Like.getPix(user)));
+            }
+        }, 0, 2000);
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
@@ -165,5 +175,12 @@ public class ProfileFragment extends Fragment {
                 });
             }
         }
+    }
+
+    // We need to make sure to stop the Timer that updates the number of "Pix"(Likes) when this Fragment is ended
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        timer.cancel();
     }
 }

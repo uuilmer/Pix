@@ -19,9 +19,11 @@ import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
 import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
+import com.parse.DeleteCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.Timer;
@@ -96,28 +98,47 @@ public class MusicRoomFragment extends Fragment {
         ImageView ivLike = view.findViewById(R.id.musicroom_like);
         likesThisStreamer = Like.checkIfLikes(ParseUser.getCurrentUser(), musicRoom.getUser());
 
-        if (likesThisStreamer == null){
+        if (likesThisStreamer == null) {
+            ivLike.setImageResource(R.drawable.unlike);
+        } else {
             ivLike.setImageResource(R.drawable.like);
         }
-        else{
-            ivLike.setImageResource(R.drawable.unlike);
+
+        if (isOwner) {
+            ivLike.setVisibility(View.GONE);
+        } else {
+            // When we click like, create a new Like and save
+            ivLike.setOnClickListener(unusedView -> {
+                if (likesThisStreamer == null) {
+                    likesThisStreamer = new Like();
+                    likesThisStreamer.setListener(ParseUser.getCurrentUser());
+                    likesThisStreamer.setStreamer(ownerOfRoom);
+                    likesThisStreamer.saveInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        ivLike.setImageResource(R.drawable.like);
+                    });
+                } else {
+                    // When we click unlike, delete the current Like
+                    likesThisStreamer.deleteInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        ivLike.setImageResource(R.drawable.unlike);
+                        likesThisStreamer = null;
+                    });
+                }
+            });
         }
-
-        TextView tvPix = view.findViewById(R.id.musicroom_pix);
-
-        ivLike.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
 
         // Retrieve the button we will click to start streaming and stop (play)
         ivPlay = view.findViewById(R.id.musicroom_play);
         playingGif = view.findViewById(R.id.musicroom_playing);
         Glide.with(getContext()).load(Uri.parse("android.resource://com.example.pix/" + R.drawable.musicroom_playing)).into(playingGif);
-        playingGif.setVisibility(View.GONE);
+        playingGif.setVisibility(View.INVISIBLE);
 
         // Try to get the current Song
         nowPlayingInParse = musicRoom.getCurrentSong();
@@ -217,7 +238,7 @@ public class MusicRoomFragment extends Fragment {
         isPlayingLocally = !isPlayingLocally;
     }
 
-    private void startStream(){
+    private void startStream() {
         // Start the disk spinning to show that we are streaming/ listening
         ivPlay.setImageResource(R.drawable.musicroom_pause);
         playingGif.setVisibility(View.VISIBLE);
@@ -291,7 +312,7 @@ public class MusicRoomFragment extends Fragment {
         }
     }
 
-    private void stopStream(){
+    private void stopStream() {
         // Stop the spinning disk since we will no longer be playing/streaming a stream
         playingGif.setVisibility(View.GONE);
 
