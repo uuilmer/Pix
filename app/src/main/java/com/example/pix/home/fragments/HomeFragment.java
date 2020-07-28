@@ -25,6 +25,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.adapters.SearchAdapter;
+import com.example.pix.home.utils.PopupHelper;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -73,48 +74,9 @@ public class HomeFragment extends Fragment {
 
         Button svChats = view.findViewById(R.id.search_user);
 
-        // ALMOST ALL OF THIS CODE IS REPEATED FROM COMPOSE, SO LOOK TO REDUCE CODE REPETITION
+        // Create popup to search for friends
         svChats.setOnClickListener(view1 -> {
-            LinearLayout container = getActivity().findViewById(R.id.home_container);
-            LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View popup = layoutInflater.inflate(R.layout.popup_search, null);
-
-            ImageView close = popup.findViewById(R.id.popup_close);
-            SearchView search = popup.findViewById(R.id.popup_searchView);
-            RecyclerView rvResults = popup.findViewById(R.id.popup_rv);
-
-            PopupWindow popupWindow = new PopupWindow(popup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-            popupWindow.showAtLocation(container, Gravity.CENTER, 0, 0);
-            search.requestFocus();
-            close.setOnClickListener(view2 -> popupWindow.dismiss());
-
-            List<ParseUser> results = new ArrayList<>();
-            SearchAdapter adapter = new SearchAdapter(getContext(), results);
-            rvResults.setAdapter(adapter);
-            rvResults.setLayoutManager(new LinearLayoutManager(getContext()));
-
-            search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String s) {
-                    ParseQuery<ParseUser> q = ParseQuery.getQuery(ParseUser.class);
-                    q.whereStartsWith("username", s);
-                    q.findInBackground((objects, e) -> {
-                        if (e != null) {
-                            Toast.makeText(getContext(), "Error searching!", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        results.clear();
-                        results.addAll(objects);
-                        adapter.notifyDataSetChanged();
-                    });
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String s) {
-                    return false;
-                }
-            });
+            PopupHelper.createPopup(getActivity(), getContext(), false);
 
         });
 
