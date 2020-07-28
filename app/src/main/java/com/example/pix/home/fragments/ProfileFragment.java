@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.transition.AutoTransition;
+import android.transition.Fade;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;

@@ -51,7 +51,6 @@ public class ChatsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView tvScore = view.findViewById(R.id.tv_score);
         RecyclerView rvChats = view.findViewById(R.id.rv_chats);
 
         // Get a List of this User's Chats and create an Adapter for it

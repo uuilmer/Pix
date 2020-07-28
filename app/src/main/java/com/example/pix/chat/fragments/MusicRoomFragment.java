@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
+import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
@@ -45,6 +47,7 @@ public class MusicRoomFragment extends Fragment {
     private Song nowPlayingInParse;
     private boolean isPlayingInParse;
     public static final String NOW_PLAYING = "nowPlaying";
+    private Like likesThisStreamer;
 
     public MusicRoomFragment(ParseUser ownerOfRoom) {
         this.ownerOfRoom = ownerOfRoom;
@@ -89,6 +92,26 @@ public class MusicRoomFragment extends Fragment {
             e.printStackTrace();
             Toast.makeText(getContext(), "Error creating MusicRoom", Toast.LENGTH_SHORT).show();
         }
+
+        ImageView ivLike = view.findViewById(R.id.musicroom_like);
+        likesThisStreamer = Like.checkIfLikes(ParseUser.getCurrentUser(), musicRoom.getUser());
+
+        if (likesThisStreamer == null){
+            ivLike.setImageResource(R.drawable.like);
+        }
+        else{
+            ivLike.setImageResource(R.drawable.unlike);
+        }
+
+        TextView tvPix = view.findViewById(R.id.musicroom_pix);
+
+        ivLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
 
         // Retrieve the button we will click to start streaming and stop (play)
         ivPlay = view.findViewById(R.id.musicroom_play);

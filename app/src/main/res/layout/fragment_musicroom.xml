@@ -1,21 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+
     <ImageView
         android:id="@+id/musicroom_play"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@drawable/musicroom_play"/>
+        android:layout_gravity="center"
+        android:src="@drawable/musicroom_play" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/musicroom_like"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
+
+            <TextView
+                android:id="@+id/musicroom_pix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="324" />
+
+        </LinearLayout>
+
+
     </LinearLayout>
+
     <ImageView
         android:id="@+id/musicroom_playing"
         android:layout_width="100dp"
-        android:layout_height="100dp"/>
+        android:layout_height="100dp" />
 
 </LinearLayout>

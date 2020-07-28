@@ -3,6 +3,9 @@ package com.example.pix.home.fragments;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.transition.AutoTransition;
+import android.transition.Explode;
+import android.transition.Fade;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,16 +25,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.adapters.SearchAdapter;
 import com.example.pix.login.LoginActivity;
+import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class HomeFragment extends Fragment {
 
@@ -52,21 +59,32 @@ public class HomeFragment extends Fragment {
 
         mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
 
+        ImageView profile = view.findViewById(R.id.profile_pic);
+
+        // Set the User profile picture
+        ParseFile image = ParseUser.getCurrentUser().getParseFile(USER_PROFILE_CODE);
+        if (image != null) {
+            Glide.with(getContext()).load(image).into(profile);
+        }
+
+        ProfileFragment profileFragment = new ProfileFragment(ParseUser.getCurrentUser());
+
+
+        profileFragment.setSharedElementEnterTransition(new Explode());
+        profileFragment.setEnterTransition(new Explode());
+        setExitTransition(new Explode());
+        profileFragment.setSharedElementReturnTransition(new Explode());
+
         // When we click on the edit profile Toolbar button, replace this screen with a ProfileFragment
-        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(unusedView -> {
+        profile.setOnClickListener(unusedView -> {
             getActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                    .addToBackStack("stack")
-                    .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
+                    .addSharedElement(profile, "profile")
+                    .addToBackStack(null)
+                    .replace(R.id.home_profile, profileFragment)
                     .commit();
         });
-        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(view12 -> getActivity().getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                .addToBackStack("stack")
-                .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
-                .commit());
 
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
