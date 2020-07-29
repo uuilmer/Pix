@@ -21,12 +21,14 @@ import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
-import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.List;
+
+import static com.example.pix.home.models.Chat.CHAT;
 
 public class ChatsFragment extends Fragment {
 
@@ -96,19 +98,17 @@ public class ChatsFragment extends Fragment {
                     final int position = viewHolder.getAdapterPosition();
                     // Get the Chat that was swiped
                     Chat toDelete = chats.get(position);
-                    try {
-                        // Delete any messages from this Chat
-                        deleteMessages(toDelete);
-                        // Delete the Chat
-                        toDelete.delete();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getContext(), "Error deleting Messages", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    // Update our RecyclerView and Adapter
-                    chats.remove(position);
-                    chatsAdapter.notifyItemRemoved(position);
+                    // Hide this Chat for this User
+                    Chat.archiveChat(toDelete, e -> {
+                        if (e != null){
+                            Toast.makeText(getContext(), "Error archiving Chat", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Toast.makeText(getContext(), "Chat archived.", Toast.LENGTH_SHORT).show();
+                        // Update our RecyclerView and Adapter
+                        chats.remove(position);
+                        chatsAdapter.notifyItemRemoved(position);
+                    });
                 }
             };
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -116,17 +116,6 @@ public class ChatsFragment extends Fragment {
         } catch (ParseException e) {
             Log.e("Error", "Error getting List of Chats", e);
             Toast.makeText(getContext(), "Error retrieving chats", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Get a List of Messages from this Chat then delete each one of them
-    public void deleteMessages(Chat chat) throws ParseException {
-        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
-        q.include("chat");
-        q.whereEqualTo("chat", chat);
-        List<Message> res = q.find();
-        for (Message m : res) {
-            m.delete();
         }
     }
 

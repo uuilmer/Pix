@@ -8,6 +8,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,11 @@ import java.util.List;
 public class Chat extends ParseObject {
 
     public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+    public static final String CHAT = "chat";
     public static final String USER_ONE = "userOne";
     public static final String USER_TWO = "userTwo";
+    public static final String VISIBLE_ONE = "visibleOne";
+    public static final String VISIBLE_TWO = "visibleTwo";
     public static final int NUM_PER_PAGE = 20;
 
     public Chat() {
@@ -40,10 +44,13 @@ public class Chat extends ParseObject {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo(USER_ONE, user);
+        // Make sure this User has not archived this Chat
+        q.whereEqualTo(VISIBLE_ONE, true);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo(USER_TWO, user);
+        p.whereEqualTo(VISIBLE_TWO, true);
         queries.add(p);
 
         // Combine the queries as an OR
@@ -59,10 +66,13 @@ public class Chat extends ParseObject {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo(USER_ONE, user);
+        // Make sure this User has not archived this Chat
+        q.whereEqualTo(VISIBLE_ONE, true);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo(USER_TWO, user);
+        p.whereEqualTo(VISIBLE_TWO, true);
         queries.add(p);
 
         // Combine the queries as an OR
@@ -71,6 +81,27 @@ public class Chat extends ParseObject {
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
         res.findInBackground(handler);
+    }
+
+    // Get a List of Messages from this Chat then delete each one of them
+    public static void deleteMessages(Chat chat) throws ParseException {
+        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+        q.include(CHAT);
+        q.whereEqualTo(CHAT, chat);
+        List<Message> res = q.find();
+        for (Message m : res) {
+            m.delete();
+        }
+    }
+
+    public static void archiveChat(Chat chat, SaveCallback callback){
+        // If our User is in the first slot
+        if (chat.getParseUser(USER_ONE).getObjectId().equals(ParseUser.getCurrentUser().getObjectId())){
+            chat.put(VISIBLE_ONE, false);
+        } else {
+            chat.put(VISIBLE_TWO, false);
+        }
+        chat.saveInBackground(callback);
     }
 
     public int getStatus() {
@@ -121,8 +152,8 @@ public class Chat extends ParseObject {
     // This method is for the purposes of a chat preview (Doesn't edit read receipts)
     public Message getFirstMessage() {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
-        q.include("chat");
-        q.whereEqualTo("chat", this);
+        q.include(CHAT);
+        q.whereEqualTo(CHAT, this);
         q.orderByDescending("createdAt");
         try {
             return q.getFirst();
@@ -134,8 +165,8 @@ public class Chat extends ParseObject {
     // This is for the purposes of entering a chat (Edits read receipts)
     public List<Message> getMessages(int page, ParseUser requester) throws ParseException {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
-        q.include("chat");
-        q.whereEqualTo("chat", this);
+        q.include(CHAT);
+        q.whereEqualTo(CHAT, this);
         q.orderByDescending("createdAt");
         q.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         q.setSkip(NUM_PER_PAGE * page);
