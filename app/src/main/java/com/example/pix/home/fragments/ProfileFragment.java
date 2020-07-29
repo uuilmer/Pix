@@ -60,12 +60,12 @@ public class ProfileFragment extends Fragment {
 
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
-        (view.findViewById(R.id.profile_back)).setOnClickListener(view13 -> getParentFragmentManager().beginTransaction()
+        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.home_profile, HomeActivity.homeFragment)
                 .commit());
 
-        (view.findViewById(R.id.profile_signout)).setOnClickListener(view12 -> {
+        (view.findViewById(R.id.profile_signout)).setOnClickListener(unusedView -> {
             ParseUser.logOut();
             Intent i = new Intent(getActivity(), LoginActivity.class);
             getActivity().startActivity(i);
@@ -73,7 +73,7 @@ public class ProfileFragment extends Fragment {
         });
         LinearLayout selectNewPic = view.findViewById(R.id.profile_change_pic);
         // When we click the plus, go to add a pic
-        selectNewPic.setOnClickListener(view1 -> {
+        selectNewPic.setOnClickListener(unusedView -> {
             Intent i = new Intent(Intent.ACTION_PICK);
             i.setType("image/*");
             startActivityForResult(i, RESULT_LOAD_IMG);
@@ -91,7 +91,7 @@ public class ProfileFragment extends Fragment {
         // If we press "Enter" in the username EditText, update the username
         EditText name = view.findViewById(R.id.profile_name);
         name.setText("" + ParseUser.getCurrentUser().getUsername());
-        name.setOnKeyListener((view1, i, keyEvent) -> {
+        name.setOnKeyListener((unusedView, i, keyEvent) -> {
             if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
                 // Create new message
                 ParseUser.getCurrentUser().setUsername(name.getText().toString());
