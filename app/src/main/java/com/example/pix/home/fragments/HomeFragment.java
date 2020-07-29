@@ -8,7 +8,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -36,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
+
+    public static final int MAX_ALPHA = 255;
 
     public HomeFragment() {
     }
@@ -142,11 +143,11 @@ public class HomeFragment extends Fragment {
                             Example: ChatsFragment is 0, ComposeFragment is 1, and in between them is 0.5
                         We scale this index up to 255 and assign it to our header's background and the opposite
                         as the icon tints. */
-                    int scaled = (int) (positionOffset * 255);
-                    headerBackground.setAlpha(255 - scaled);
-                    profile.setColorFilter(Color.argb(255, scaled, scaled, scaled));
-                    svChats.setColorFilter(Color.argb(255, scaled, scaled, scaled));
-                    pix.setTextColor(Color.argb(255, scaled, scaled, scaled));
+                    int scaled = (int) (positionOffset * MAX_ALPHA);
+                    headerBackground.setAlpha(MAX_ALPHA - scaled);
+                    profile.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    svChats.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    pix.setTextColor(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
                 }
             }
 
