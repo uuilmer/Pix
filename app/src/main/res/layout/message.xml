@@ -44,16 +44,41 @@
                 android:layout_height="wrap_content"
                 android:text="Hey you!" />
 
-            <LinearLayout
-                android:id="@+id/message_content_pics"
+            <ImageView
+                android:id="@+id/message_content_pic"
                 android:layout_width="80dp"
-                android:layout_height="wrap_content">
+                android:layout_height="80dp" />
 
-                <ImageView
-                    android:id="@+id/message_content_pic"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp" />
+            <LinearLayout
+                android:id="@+id/message_snap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corners"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/message_snap_indicator"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_margin="20dp"
+                    android:background="@drawable/rounded_corners"
+                    android:backgroundTint="#F44336" />
+
+                <TextView
+                    android:id="@+id/message_snap_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:fontFamily="@font/nunito"
+                    android:text="Tap to view" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/message_snap_pic"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

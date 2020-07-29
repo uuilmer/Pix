@@ -40,6 +40,7 @@ import com.parse.SaveCallback;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
@@ -106,7 +107,7 @@ public class ChatFragment extends Fragment {
         if (newPic != null) {
             newPic.saveInBackground((SaveCallback) e -> {
                 if (e != null) {
-                    Toast.makeText(getContext(), "Error sending pic", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error sending snap", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 Message m = new Message();
@@ -114,6 +115,8 @@ public class ChatFragment extends Fragment {
                 m.setFrom(ParseUser.getCurrentUser());
                 m.setTo(friend);
                 m.setChat(chat);
+                // If we took a new picture with Camera, this is a new SNap
+                m.setIsSnap(true);
                 saveMessage(m);
             });
         }
@@ -135,8 +138,8 @@ public class ChatFragment extends Fragment {
         }
 
         ivProfile.setOnClickListener(view12 -> getParentFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                        .addToBackStack("stack")
+                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
+                .addToBackStack("stack")
                 .replace(R.id.friend_container, new ProfileFragment(friend))
                 .commit());
 
@@ -148,8 +151,10 @@ public class ChatFragment extends Fragment {
         manager.setReverseLayout(true);
 
         try {
+            // This large ImageView covers the entire ChatFragment and will be used to display Snaps
+            ImageView snapContainer = view.findViewById(R.id.chat_snap_pic);
             messages = chat.getMessages(0, ParseUser.getCurrentUser());
-            messageAdapter = new MessageAdapter(getContext(), messages);
+            messageAdapter = new MessageAdapter(getContext(), messages, snapContainer);
             rvMessages.setAdapter(messageAdapter);
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
@@ -157,6 +162,10 @@ public class ChatFragment extends Fragment {
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         chat.getMessagesInBackground(page, ParseUser.getCurrentUser(), (objects, e) -> {
+                            if (e != null) {
+                                Toast.makeText(getContext(), "Error getting more messages", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             messages.addAll(objects);
                             messageAdapter.notifyDataSetChanged();
                         });
