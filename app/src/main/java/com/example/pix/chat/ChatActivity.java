@@ -25,8 +25,7 @@ public class ChatActivity extends AppCompatActivity {
         // Check if we took a picture from HomeFragment's ComposeFragment
         if (getIntent().hasExtra(NEW_PIC_CODE)) {
             getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image)).commit();
-        }
-        else {
+        } else {
             getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
         }
     }

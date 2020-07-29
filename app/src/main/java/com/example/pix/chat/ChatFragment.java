@@ -46,6 +46,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.CHAT;
+import static com.example.pix.home.models.Chat.CREATED_AT;
+import static com.example.pix.home.models.Chat.RECIPIENT;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
@@ -204,12 +207,12 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
-                    q.whereEqualTo("chat", chat);
-                    q.whereEqualTo("to", ParseUser.getCurrentUser());
+                    q.whereEqualTo(CHAT, chat);
+                    q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
                     // Check if there is a message in this Chat, to the current user who's time is greater
                     // than our latest message
-                    q.whereGreaterThan("createdAt", lastMessage);
-                    q.orderByAscending("createdAt");
+                    q.whereGreaterThan(CREATED_AT, lastMessage);
+                    q.orderByAscending(CREATED_AT);
                     q.findInBackground((newMessages, e) -> {
                         if (e != null) {
                             Toast.makeText(getContext(), "Error updating messages", Toast.LENGTH_SHORT).show();
