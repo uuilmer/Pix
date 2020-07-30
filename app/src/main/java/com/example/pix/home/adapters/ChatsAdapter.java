@@ -76,7 +76,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             this.tvPix.setText("" + chat.getPix() + "P");
             this.llSelect.setOnClickListener(unusedView -> {
                 Intent i = new Intent(context, FriendActivity.class);
-                i.putExtra("chat", chat.getObjectId());
+                i.putExtra(CHAT, chat.getObjectId());
                 context.startActivity(i);
             });
             try {

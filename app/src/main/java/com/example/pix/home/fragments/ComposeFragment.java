@@ -96,8 +96,7 @@ public class ComposeFragment extends Fragment {
                     camera.release();
                     if (currCamera == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                         currCamera = Camera.CameraInfo.CAMERA_FACING_BACK;
-                    }
-                    else {
+                    } else {
                         currCamera = Camera.CameraInfo.CAMERA_FACING_FRONT;
                     }
                     camera = Camera.open(currCamera);

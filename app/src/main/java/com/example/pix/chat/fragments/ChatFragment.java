@@ -34,15 +34,22 @@ import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.CHAT;
+import static com.example.pix.home.models.Chat.CREATED_AT;
+import static com.example.pix.home.models.Chat.RECIPIENT;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
@@ -57,6 +64,8 @@ public class ChatFragment extends Fragment {
     private EditText etText;
     private Chat chat;
     private ImageView ivPictures;
+    private Date lastMessage;
+    private LinearLayoutManager manager;
 
     public ChatFragment() {
     }
@@ -142,7 +151,7 @@ public class ChatFragment extends Fragment {
 
         tvName.setText("" + friend.getUsername());
 
-        LinearLayoutManager manager = new LinearLayoutManager(getContext());
+        manager = new LinearLayoutManager(getContext());
 
         // Snapchat scrolls up instead of down, so reverse
         manager.setReverseLayout(true);
@@ -197,6 +206,40 @@ public class ChatFragment extends Fragment {
                 }
                 return false;
             });
+
+            // Record the last message we received's time
+            lastMessage = messages.get(0).getTime();
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+                    q.whereEqualTo(CHAT, chat);
+                    q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
+                    // Check if there is a message in this Chat, to the current user who's time is greater
+                    // than our latest message
+                    q.whereGreaterThan(CREATED_AT, lastMessage);
+                    q.orderByAscending(CREATED_AT);
+                    q.findInBackground((newMessages, e) -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error updating messages", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // Case where there is no new messages
+                        if (newMessages.size() == 0) return;
+
+                        // Case where we have some messages to add
+                        for (Message m : newMessages) {
+                            messages.add(0, m);
+                        }
+
+                        // Alert our RecyclerView and Adapter
+                        messageAdapter.notifyDataSetChanged();
+                        lastMessage = messages.get(0).getTime();
+                        manager.scrollToPosition(0);
+                    });
+                }
+            }, 0, 500);
+
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving messages", Toast.LENGTH_SHORT).show();
         }
@@ -211,7 +254,7 @@ public class ChatFragment extends Fragment {
             }
             messages.add(0, newMessage);
             messageAdapter.notifyDataSetChanged();
-            rvMessages.smoothScrollToPosition(0);
+            manager.scrollToPosition(0);
             etText.setText("");
             chat.setStatus(1);
             ivNewPic.setImageResource(0);
