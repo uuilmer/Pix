@@ -23,6 +23,8 @@ public class Chat extends ParseObject {
     public static final String RECIPIENT = "to";
     public static final String USER_ONE = "userOne";
     public static final String USER_TWO = "userTwo";
+    public static final String VISIBLE_ONE = "visibleOne";
+    public static final String VISIBLE_TWO = "visibleTwo";
     public static final String USER_PIX = "pix";
     public static final int NUM_PER_PAGE = 20;
 
