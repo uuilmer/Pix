@@ -1,33 +1,25 @@
 package com.example.pix.home.fragments;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.SearchView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
-import com.example.pix.home.adapters.SearchAdapter;
 import com.example.pix.home.utils.PopupHelper;
 import com.example.pix.login.LoginActivity;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
