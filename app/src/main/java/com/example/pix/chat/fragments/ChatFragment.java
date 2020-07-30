@@ -147,7 +147,6 @@ public class ChatFragment extends Fragment {
         }
 
         ivProfile.setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
                 .addToBackStack("stack")
                 .replace(R.id.friend_container, new ProfileFragment(friend))
                 .commit());
@@ -217,7 +216,12 @@ public class ChatFragment extends Fragment {
             });
 
             // Record the last message we received's time
-            lastMessage = messages.get(0).getTime();
+            if (messages.size() == 0) {
+                lastMessage = null;
+            }
+            else {
+                lastMessage = messages.get(0).getTime();
+            }
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -226,7 +230,9 @@ public class ChatFragment extends Fragment {
                     q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
                     // Check if there is a message in this Chat, to the current user who's time is greater
                     // than our latest message
-                    q.whereGreaterThan(CREATED_AT, lastMessage);
+                    if (lastMessage != null) {
+                        q.whereGreaterThan(CREATED_AT, lastMessage);
+                    }
                     q.orderByAscending(CREATED_AT);
                     q.findInBackground((newMessages, e) -> {
                         if (e != null) {
