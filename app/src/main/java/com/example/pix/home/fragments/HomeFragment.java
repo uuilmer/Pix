@@ -62,11 +62,6 @@ public class HomeFragment extends Fragment {
                     .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
                     .commit();
         });
-        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(view12 -> getActivity().getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                .addToBackStack("stack")
-                .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
-                .commit());
 
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);

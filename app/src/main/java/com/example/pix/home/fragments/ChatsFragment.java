@@ -15,10 +15,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.example.pix.R;
 import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
@@ -79,6 +81,26 @@ public class ChatsFragment extends Fragment {
             };
 
             rvChats.addOnScrollListener(scroll);
+
+            PullRefreshLayout layout = view.findViewById(R.id.swipeRefreshLayout);
+
+            // Whenever we try to refresh, delete all Chats, and get them again
+            layout.setRefreshStyle(PullRefreshLayout.STYLE_WATER_DROP);
+            layout.setOnRefreshListener(() -> {
+                try {
+                    Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
+                        chats.clear();
+                        chats.addAll(objects);
+                        chatsAdapter.notifyDataSetChanged();
+                        layout.setRefreshing(false);
+                    });
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Error refreshing Chats", Toast.LENGTH_SHORT).show();
+                    layout.setRefreshing(false);
+                }
+            });
+
         } catch (ParseException e) {
             Log.e("Error", "Error getting List of Chats", e);
             Toast.makeText(getContext(), "Error retrieving chats", Toast.LENGTH_SHORT).show();
