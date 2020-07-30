@@ -24,6 +24,7 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
+import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 
@@ -76,7 +77,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             this.tvPix.setText("" + chat.getPix() + "P");
             this.llSelect.setOnClickListener(unusedView -> {
                 Intent i = new Intent(context, FriendActivity.class);
-                i.putExtra("chat", chat.getObjectId());
+                i.putExtra(CHAT, chat.getObjectId());
                 context.startActivity(i);
             });
             try {

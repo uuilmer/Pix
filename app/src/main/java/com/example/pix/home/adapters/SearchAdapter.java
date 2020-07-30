@@ -102,15 +102,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     newChat.setUser(ParseUser.getCurrentUser());
                     newChat.setFriend(user);
                     newChat.saveInBackground(e -> {
+                        if (e != null) {
+                            System.out.println(e.getMessage());
+                            return;
+                        }
                         i.putExtra("chat", newChat.getObjectId());
                         context.startActivity(i);
                     });
                     return;
                 }
 
+
                 // Action after we unarchive
                 SaveCallback callback = e -> {
-                    if (e != null){
+                    if (e != null) {
                         Toast.makeText(context, "Error unarchiving Chat", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -119,18 +124,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 };
 
                 // We need to unarchive this Chat if it was archived
-                if (chat.getParseUser(USER_ONE).getObjectId().equals(ParseUser.getCurrentUser().getObjectId())){
+                if (chat.getParseUser(USER_ONE).getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
                     if (!chat.getBoolean(VISIBLE_ONE)) {
                         chat.put(VISIBLE_ONE, true);
                         chat.saveInBackground(callback);
+                        return;
                     }
-                }
-                else {
+                } else {
                     if (!chat.getBoolean(VISIBLE_TWO)) {
                         chat.put(VISIBLE_TWO, true);
                         chat.saveInBackground(callback);
+                        return;
                     }
                 }
+                // Case where the Chat was already visible
+                i.putExtra("chat", chat.getObjectId());
+                context.startActivity(i);
             });
             ParseFile pic = user.getParseFile(USER_PROFILE_CODE);
             if (pic != null) {

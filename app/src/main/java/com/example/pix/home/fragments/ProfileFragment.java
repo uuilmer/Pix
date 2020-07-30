@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -70,6 +71,10 @@ public class ProfileFragment extends Fragment {
 
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
+        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.home_profile, HomeActivity.homeFragment)
+                .commit());
         (view.findViewById(R.id.profile_back)).setOnClickListener(view12 -> getActivity().onBackPressed());
 
         profile = view.findViewById(R.id.profile_pic);

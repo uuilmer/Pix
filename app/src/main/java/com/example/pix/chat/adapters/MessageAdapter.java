@@ -49,7 +49,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(messages.get(position), context, snapContainer);
+        holder.bind(position, messages, context, snapContainer);
     }
 
     @Override
@@ -77,28 +77,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.snapText = itemView.findViewById(R.id.message_snap_text);
         }
 
-        public void bind(Message message, Context context, ImageView snapContainer) {
+        public void bind(int position, List<Message> messages, Context context, ImageView snapContainer) {
             this.contentPic.setVisibility(View.GONE);
+            this.name.setVisibility(View.VISIBLE);
 
-            // Attempted to combine consecutive messages but failed:
+            Message message = messages.get(position);
 
-            /*this.itemView.setVisibility(View.VISIBLE);
-            this.contentPics.removeAllViews();
-            if(!viewHolders.contains(this))
-                viewHolders.add(this);
-            if(position > 0){
-                int currIndex = viewHolders.indexOf(this);
-                ViewHolder previous = viewHolders.get(currIndex -1);
-                while(previous.itemView.getVisibility() == View.GONE && currIndex > 0)
-                    previous = viewHolders.get(--currIndex);
-                Message content = previous.getMessage();
-                if(content.getFrom().equals(ParseUser.getCurrentUser())){
-                    previous.text.setText("" + previous.text.getText().toString() + "\n" + message.getText());
-                    newPic(previous.contentPics, message);
-                    this.itemView.setVisibility(View.GONE);
-                    return;
+            // Check if the previous message was sent by the same person, if so there is no need to display the username again
+            if (position < messages.size() - 1) {
+                if (messages.get(position + 1).getFrom().getObjectId().equals(message.getFrom().getObjectId())) {
+                    this.name.setVisibility(View.GONE);
                 }
-            }*/
+            }
+
             ParseUser from = message.getFrom();
             try {
                 this.name.setText("" + (from.fetchIfNeeded().getObjectId().equals(ParseUser.getCurrentUser().getObjectId()) ? "Me" : from.fetchIfNeeded().getUsername()));
@@ -166,24 +157,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             }
 
             this.message = message;
-        }
-        /*private void newPic(ViewGroup viewGroup, Message message){
-            ParseFile pic = message.getPic();
-            if(pic != null) {
-                ImageView newPic = new ImageView(viewGroup.getContext());
-                Glide.with(viewGroup.getContext()).load(pic.getUrl()).into(newPic);
-                newPic.getLayoutParams().height = (int) convertPixelsToDp(80, itemView.getContext());
-                newPic.getLayoutParams().width = (int) convertPixelsToDp(80, itemView.getContext());
-                viewGroup.addView(newPic);
-            }
-        }
-
-        public Message getMessage() {
-            return message;
-        }*/
-
-        public static float convertPixelsToDp(float px, Context context) {
-            return px / ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         }
     }
 }

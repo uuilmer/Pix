@@ -12,6 +12,7 @@ import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +27,7 @@ import java.util.List;
 public class PopupHelper {
 
     public static void createPopup(Activity activity, Context context, boolean newPic) {
-        LinearLayout container = activity.findViewById(R.id.home_container);
+        ConstraintLayout container = activity.findViewById(R.id.home_container);
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popup = layoutInflater.inflate(R.layout.popup_search, null);
 
