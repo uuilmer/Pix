@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -72,7 +73,7 @@ public class HomeFragment extends Fragment {
 
         // ALMOST ALL OF THIS CODE IS REPEATED FROM COMPOSE, SO LOOK TO REDUCE CODE REPETITION
         svChats.setOnClickListener(view1 -> {
-            LinearLayout container = getActivity().findViewById(R.id.home_container);
+            ConstraintLayout container = getActivity().findViewById(R.id.home_container);
             LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View popup = layoutInflater.inflate(R.layout.popup_search, null);
 

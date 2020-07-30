@@ -24,6 +24,7 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
+import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 
