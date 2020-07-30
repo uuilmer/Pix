@@ -24,6 +24,7 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChatsFragment extends Fragment {
@@ -110,7 +111,8 @@ public class ChatsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        chats.clear();
+        if (chats == null) chats = new ArrayList<>();
+        else chats.clear();
         try {
             Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
                 chats.addAll(objects);

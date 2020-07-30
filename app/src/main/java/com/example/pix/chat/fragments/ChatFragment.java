@@ -134,9 +134,9 @@ public class ChatFragment extends Fragment {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
-        ivProfile.setOnClickListener(view12 -> getParentFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
-                        .addToBackStack("stack")
+        ivProfile.setOnClickListener(view12 -> getParentFragmentManager()
+                .beginTransaction()
+                .addToBackStack("stack")
                 .replace(R.id.friend_container, new ProfileFragment(friend))
                 .commit());
 

@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;

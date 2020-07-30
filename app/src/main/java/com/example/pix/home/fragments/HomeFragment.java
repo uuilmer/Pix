@@ -57,7 +57,6 @@ public class HomeFragment extends Fragment {
             getActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up)
                     .addToBackStack("stack")
                     .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
                     .commit();
