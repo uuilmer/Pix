@@ -1,4 +1,4 @@
-package com.example.pix.chat;
+package com.example.pix.chat.fragments;
 
 import android.Manifest;
 import android.content.Intent;
@@ -27,39 +27,59 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.adapters.MessageAdapter;
 import com.example.pix.chat.utils.FetchPath;
+import com.example.pix.home.fragments.ComposeFragment;
+import com.example.pix.home.fragments.ProfileFragment;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.models.Chat.CHAT;
+import static com.example.pix.home.models.Chat.CREATED_AT;
+import static com.example.pix.home.models.Chat.RECIPIENT;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class ChatFragment extends Fragment {
+
+    public static final int RESULT_LOAD_IMG = 100;
+    public static final int REQUEST_PERM = 101;
+    private ImageView ivNewPic;
+    private ParseFile newPic;
+    private MessageAdapter messageAdapter;
+    private List<Message> messages;
+    private RecyclerView rvMessages;
+    private EditText etText;
+    private Chat chat;
+    private ImageView ivPictures;
+    private Date lastMessage;
+    private LinearLayoutManager manager;
+
+    public ChatFragment() {
+    }
+
+    public ChatFragment(ParseFile parseFile) {
+        this.newPic = parseFile;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
-
-    public static final int RESULT_LOAD_IMG = 100;
-    public static final int REQUEST_PERM = 101;
-    ImageView ivNewPic;
-    ParseFile newPic;
-    MessageAdapter messageAdapter;
-    List<Message> messages;
-    RecyclerView rvMessages;
-    EditText etText;
-    Chat chat;
-    ImageView ivPictures;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -81,12 +101,37 @@ public class ChatFragment extends Fragment {
         ivPictures = view.findViewById(R.id.chat_pictures);
         ivNewPic = view.findViewById(R.id.chat_image);
 
+        // If we click the camera, go to the ComposeFragment
+        ivCamera.setOnClickListener(view1 -> {
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.friend_container, new ComposeFragment())
+                    .commit();
+        });
+
         ivBack.setOnClickListener(view1 -> getActivity().finish());
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
+        if (newPic != null) {
+            newPic.saveInBackground((SaveCallback) e -> {
+                if (e != null) {
+                    Toast.makeText(getContext(), "Error sending snap", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Message m = new Message();
+                m.setPic(newPic);
+                m.setFrom(ParseUser.getCurrentUser());
+                m.setTo(friend);
+                m.setChat(chat);
+                // If we took a new picture with Camera, this is a new SNap
+                m.setIsSnap(true);
+                saveMessage(m);
+            });
+        }
+
         // When we click the plus, go to add a pic
-        ivPictures.setOnClickListener(view1 -> {
+        ivPictures.setOnClickListener(unusedView -> {
             Intent i = new Intent(Intent.ACTION_PICK);
             i.setType("image/*");
             startActivityForResult(i, RESULT_LOAD_IMG);
@@ -95,29 +140,40 @@ public class ChatFragment extends Fragment {
         // Get this friend's profile pic
         ParseFile profile;
         try {
-            profile = friend.fetchIfNeeded().getParseFile("profile");
+            profile = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
             Glide.with(getActivity()).load(profile.getUrl()).circleCrop().into(ivProfile);
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
+        ivProfile.setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
+                .addToBackStack("stack")
+                .replace(R.id.friend_container, new ProfileFragment(friend))
+                .commit());
+
         tvName.setText("" + friend.getUsername());
 
-        LinearLayoutManager manager = new LinearLayoutManager(getContext());
+        manager = new LinearLayoutManager(getContext());
 
         // Snapchat scrolls up instead of down, so reverse
         manager.setReverseLayout(true);
 
         try {
+            // This large ImageView covers the entire ChatFragment and will be used to display Snaps
+            ImageView snapContainer = view.findViewById(R.id.chat_snap_pic);
             messages = chat.getMessages(0, ParseUser.getCurrentUser());
-            messageAdapter = new MessageAdapter(getContext(), messages);
+            messageAdapter = new MessageAdapter(getContext(), messages, snapContainer);
             rvMessages.setAdapter(messageAdapter);
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
                 @Override
-                public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         chat.getMessagesInBackground(page, ParseUser.getCurrentUser(), (objects, e) -> {
+                            if (e != null) {
+                                Toast.makeText(getContext(), "Error getting more messages", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             messages.addAll(objects);
                             messageAdapter.notifyDataSetChanged();
                         });
@@ -150,13 +206,55 @@ public class ChatFragment extends Fragment {
                             newMessage.setPic(newPic);
                             saveMessage(newMessage);
                         });
-                    } else
+                    } else {
                         // Case where there is no picture
                         saveMessage(newMessage);
+                    }
                     return true;
                 }
                 return false;
             });
+
+            // Record the last message we received's time
+            if (messages.size() == 0) {
+                lastMessage = null;
+            }
+            else {
+                lastMessage = messages.get(0).getTime();
+            }
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+                    q.whereEqualTo(CHAT, chat);
+                    q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
+                    // Check if there is a message in this Chat, to the current user who's time is greater
+                    // than our latest message
+                    if (lastMessage != null) {
+                        q.whereGreaterThan(CREATED_AT, lastMessage);
+                    }
+                    q.orderByAscending(CREATED_AT);
+                    q.findInBackground((newMessages, e) -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error updating messages", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // Case where there is no new messages
+                        if (newMessages.size() == 0) return;
+
+                        // Case where we have some messages to add
+                        for (Message m : newMessages) {
+                            messages.add(0, m);
+                        }
+
+                        // Alert our RecyclerView and Adapter
+                        messageAdapter.notifyDataSetChanged();
+                        lastMessage = messages.get(0).getTime();
+                        manager.scrollToPosition(0);
+                    });
+                }
+            }, 0, 500);
+
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving messages", Toast.LENGTH_SHORT).show();
         }
@@ -171,7 +269,7 @@ public class ChatFragment extends Fragment {
             }
             messages.add(0, newMessage);
             messageAdapter.notifyDataSetChanged();
-            rvMessages.smoothScrollToPosition(0);
+            manager.scrollToPosition(0);
             etText.setText("");
             chat.setStatus(1);
             ivNewPic.setImageResource(0);

@@ -11,6 +11,13 @@ import java.util.Date;
 @ParseClassName("Message")
 public class Message extends ParseObject {
 
+    public static final String CHAT = "chat";
+    public static final String SENDER = "from";
+    public static final String RECIPIENT = "to";
+    public static final String TEXT = "text";
+    public static final String PICTURE = "pic";
+    public static final String IS_SNAP = "isSnap";
+
     public Message() {
     }
 
@@ -39,7 +46,7 @@ public class Message extends ParseObject {
     }
 
     public Date getTime() {
-        return getCreatedAt();
+        return getUpdatedAt();
     }
 
     public String getText() {
@@ -56,5 +63,13 @@ public class Message extends ParseObject {
 
     public void setPic(ParseFile pic) {
         put("pic", pic);
+    }
+
+    public boolean isSnap() {
+        return getBoolean(IS_SNAP);
+    }
+
+    public void setIsSnap(boolean isSnap) {
+        put(IS_SNAP, isSnap);
     }
 }

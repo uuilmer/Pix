@@ -9,25 +9,29 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.ChatActivity;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
 import com.example.pix.home.models.Message;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
 
 import java.util.List;
 
+import static com.example.pix.home.models.Chat.CHAT;
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
+
+
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
 
-    Context context;
-    List<Chat> chats;
+    private Context context;
+    private List<Chat> chats;
 
     public ChatsAdapter(Context context, List<Chat> chats) {
         this.context = context;
@@ -51,13 +55,13 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         return chats.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivProfile;
-        TextView tvName;
-        TextView tvStatus;
-        TextView tvTime;
-        TextView tvPix;
-        LinearLayout llSelect;
+    protected class ViewHolder extends RecyclerView.ViewHolder {
+        private ImageView ivProfile;
+        private TextView tvName;
+        private TextView tvStatus;
+        private TextView tvTime;
+        private TextView tvPix;
+        private LinearLayout llSelect;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -71,29 +75,27 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
 
         public void bind(Chat chat) {
             this.tvPix.setText("" + chat.getPix() + "P");
-            this.llSelect.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(context, ChatActivity.class);
-                    i.putExtra("chat", chat.getObjectId());
-                    context.startActivity(i);
-                }
+            this.llSelect.setOnClickListener(unusedView -> {
+                Intent i = new Intent(context, FriendActivity.class);
+                i.putExtra(CHAT, chat.getObjectId());
+                context.startActivity(i);
             });
             try {
                 ParseUser friend = chat.getFriend(ParseUser.getCurrentUser()).fetchIfNeeded();
-                Glide.with(context)
-                        .load(friend
-                                .getParseFile("profile")
-                                .getUrl())
-                        .circleCrop()
-                        .into(this.ivProfile);
+                ParseFile pic = friend.getParseFile(USER_PROFILE_CODE);
+                if (pic != null) {
+                    Glide.with(context)
+                            .load(pic
+                                    .getUrl())
+                            .circleCrop()
+                            .into(this.ivProfile);
+                }
                 this.tvName.setText("" + friend.getUsername());
                 this.tvStatus.setText("" + chat.getStatusText());
                 Message recent = chat.getFirstMessage();
                 this.tvTime.setText("" + (recent != null ? recent.getTime().toString() : ""));
             } catch (ParseException e) {
                 Log.e("Error", "Failed getting status text and/or time", e);
-                Toast.makeText(context, "Error getting Chat status", Toast.LENGTH_SHORT).show();
             }
         }
     }

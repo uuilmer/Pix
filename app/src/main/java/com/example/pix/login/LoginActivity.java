@@ -103,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
                             mSpotifyAppRemote = spotifyAppRemote;
 
                             // We are done Authenticating Spotify
-                            (findViewById(R.id.spotify_auth_container)).setVisibility(View.GONE);
+                            (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
                             checkIfDone();
                         }
 

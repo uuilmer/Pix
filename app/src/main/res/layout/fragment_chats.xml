@@ -6,9 +6,16 @@
     android:orientation="vertical"
     tools:context=".home.fragments.ChatsFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_chats"
+    <com.baoyz.widget.PullRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="40dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_chats"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.baoyz.widget.PullRefreshLayout>
 
 </LinearLayout>

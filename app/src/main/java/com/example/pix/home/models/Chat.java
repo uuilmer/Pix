@@ -11,17 +11,24 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @ParseClassName("Chat")
 public class Chat extends ParseObject {
 
     public static final String[] statuses = new String[]{"New Chat", "Opened", "Delivered"};
+    public static final String USER_PROFILE_CODE = "profile";
+    public static final String CREATED_AT = "createdAt";
+    public static final String UPDATED_AT = "updatedAt";
     public static final String CHAT = "chat";
+    public static final String SENDER = "from";
+    public static final String RECIPIENT = "to";
     public static final String USER_ONE = "userOne";
     public static final String USER_TWO = "userTwo";
     public static final String VISIBLE_ONE = "visibleOne";
     public static final String VISIBLE_TWO = "visibleTwo";
+    public static final String USER_PIX = "pix";
     public static final int NUM_PER_PAGE = 20;
 
     public Chat() {
@@ -56,6 +63,7 @@ public class Chat extends ParseObject {
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
+        res.orderByDescending(UPDATED_AT);
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
         return res.find();
@@ -78,8 +86,30 @@ public class Chat extends ParseObject {
         // Combine the queries as an OR
         ParseQuery<Chat> res = ParseQuery.or(queries);
 
+        res.orderByDescending(UPDATED_AT);
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
+        res.findInBackground(handler);
+    }
+
+    // Combine Chats where this user is the sender OR ones where they are recipient, but in background
+    public static void getChatsInBackground(ParseUser user, int page, FindCallback<Chat> handler, Date lowerLimit) throws ParseException {
+        List<ParseQuery<Chat>> queries = new ArrayList<>();
+        ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
+        q.whereEqualTo(USER_ONE, user);
+        queries.add(q);
+
+        ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
+        p.whereEqualTo(USER_TWO, user);
+        queries.add(p);
+
+        // Combine the queries as an OR
+        ParseQuery<Chat> res = ParseQuery.or(queries);
+
+        res.orderByDescending(UPDATED_AT);
+        res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
+        res.setSkip(NUM_PER_PAGE * page);
+        res.whereGreaterThan(UPDATED_AT, lowerLimit);
         res.findInBackground(handler);
     }
 
@@ -112,12 +142,14 @@ public class Chat extends ParseObject {
         // Maybe make a new column to keep track of this status as a number?
         int status = getInt("status");
         Message latestMessage = getFirstMessage();
-        if (latestMessage == null)
-            return "New chat!";
+
+        if (latestMessage == null) return "New chat!";
+
         boolean userSentThis = latestMessage.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
         // If the current user sent this message, return either opened or delivered
-        if (userSentThis)
-            return statuses[1 + status];
+
+        if (userSentThis) return statuses[1 + status];
+
         // Else return opened or new chat
         return statuses[1 - status];
     }
@@ -154,7 +186,7 @@ public class Chat extends ParseObject {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
         q.include(CHAT);
         q.whereEqualTo(CHAT, this);
-        q.orderByDescending("createdAt");
+        q.orderByDescending(UPDATED_AT);
         try {
             return q.getFirst();
         } catch (ParseException ignored) {
@@ -167,14 +199,14 @@ public class Chat extends ParseObject {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
         q.include(CHAT);
         q.whereEqualTo(CHAT, this);
-        q.orderByDescending("createdAt");
+        q.orderByDescending(CREATED_AT);
         q.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         q.setSkip(NUM_PER_PAGE * page);
 
         // If the user that requested these Messages is the one who they were sent to, mark as read
         if (this.getStatus() == 1) {
             ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
-            if(recipient.getObjectId().equals(requester.getObjectId())) {
+            if (recipient.getObjectId().equals(requester.getObjectId())) {
                 this.setStatus(0);
                 this.save();
             }
@@ -186,15 +218,15 @@ public class Chat extends ParseObject {
     // This is for the purposes of entering a chat (Edits read receipts), but in background
     public void getMessagesInBackground(int page, ParseUser requester, FindCallback<Message> handler) throws ParseException {
         ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
-        q.include("chat");
-        q.whereEqualTo("chat", this);
-        q.orderByDescending("createdAt");
+        q.include(CHAT);
+        q.whereEqualTo(CHAT, this);
+        q.orderByDescending(CREATED_AT);
         q.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         q.setSkip(NUM_PER_PAGE * page);
 
         if (this.getStatus() == 1) {
             ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
-            if(recipient.getObjectId().equals(requester.getObjectId())) {
+            if (recipient.getObjectId().equals(requester.getObjectId())) {
                 this.setStatus(0);
                 this.save();
             }
