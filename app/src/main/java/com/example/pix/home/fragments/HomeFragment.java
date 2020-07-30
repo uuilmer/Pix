@@ -2,16 +2,17 @@ package com.example.pix.home.fragments;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
+
+    public static final int MAX_ALPHA = 255;
 
     public HomeFragment() {
     }
@@ -65,7 +68,7 @@ public class HomeFragment extends Fragment {
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
 
-        Button svChats = view.findViewById(R.id.search_user);
+        ImageView svChats = view.findViewById(R.id.home_search_user);
 
         // ALMOST ALL OF THIS CODE IS REPEATED FROM COMPOSE, SO LOOK TO REDUCE CODE REPETITION
         svChats.setOnClickListener(view1 -> {
@@ -123,13 +126,30 @@ public class HomeFragment extends Fragment {
         colors.add(Color.GREEN);
 
 
+        ImageView profile = view.findViewById(R.id.home_profile_icon);
+        TextView pix = view.findViewById(R.id.tv_score);
         ViewPager viewPager = view.findViewById(R.id.vpPager);
         // Link the colors to each page
+        LinearLayout header = view.findViewById(R.id.header);
+        Drawable headerBackground = header.getBackground();
+        headerBackground.setAlpha(0);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 pagerTabStrip.setTabIndicatorColor(colors.get(position));
-                System.out.println(positionOffset);
+                // Only when not 0 because for some reason, when we are exactly at ComposeFragment(Index 1),
+                // The offset jumps to 0 from 0.9999
+                if (positionOffset != 0) {
+                    /*  When we scroll the PagerView, use the offset(The fraction of what index page we are on:
+                            Example: ChatsFragment is 0, ComposeFragment is 1, and in between them is 0.5
+                        We scale this index up to 255 and assign it to our header's background and the opposite
+                        as the icon tints. */
+                    int scaled = (int) (positionOffset * MAX_ALPHA);
+                    headerBackground.setAlpha(MAX_ALPHA - scaled);
+                    profile.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    svChats.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    pix.setTextColor(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                }
             }
 
             @Override
