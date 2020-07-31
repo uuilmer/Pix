@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -108,18 +109,13 @@ public class ChatsFragment extends Fragment {
                 public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                     final int position = viewHolder.getAdapterPosition();
                     // Get the Chat that was swiped
-                    Chat toDelete = chats.get(position);
+                    Chat toArchive = chats.get(position);
                     // Hide this Chat for this User
-                    Chat.archiveChat(toDelete, e -> {
-                        if (e != null){
-                            Toast.makeText(getContext(), "Error archiving Chat", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        Toast.makeText(getContext(), "Chat archived.", Toast.LENGTH_SHORT).show();
-                        // Update our RecyclerView and Adapter
-                        chats.remove(position);
-                        chatsAdapter.notifyItemRemoved(position);
-                    });
+                    Chat.archiveChat(getContext(), toArchive);
+                    Toast.makeText(getContext(), "Chat archived.", Toast.LENGTH_SHORT).show();
+                    // Update our RecyclerView and Adapter
+                    chats.remove(position);
+                    chatsAdapter.notifyItemRemoved(position);
                 }
             };
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -131,7 +127,11 @@ public class ChatsFragment extends Fragment {
             // Whenever we try to refresh, delete all Chats, and get them again
             layout.setRefreshStyle(PullRefreshLayout.STYLE_WATER_DROP);
 
-            lowerLimit = chats.get(0).getUpdatedAt();
+            if (chats.size() == 0) {
+                lowerLimit = null;
+            } else {
+                lowerLimit = chats.get(0).getUpdatedAt();
+            }
             layout.setOnRefreshListener(() -> {
                 try {
                     Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
@@ -142,7 +142,7 @@ public class ChatsFragment extends Fragment {
                         }
                         // Delete them
                         // The short-hand for-loop gave concurrent complications at times
-                        for (int i = 0; i < chats.size(); i++){
+                        for (int i = 0; i < chats.size(); i++) {
                             if (toRemove.contains(chats.get(i).getObjectId())) {
                                 chats.remove(i);
                                 i--;
@@ -155,7 +155,11 @@ public class ChatsFragment extends Fragment {
                         chatsAdapter.notifyDataSetChanged();
                         layout.setRefreshing(false);
                         // Our newest message is now newer
-                        lowerLimit = chats.get(0).getUpdatedAt();
+                        if (chats.size() == 0) {
+                            lowerLimit = null;
+                        } else {
+                            lowerLimit = chats.get(0).getUpdatedAt();
+                        }
                     }, lowerLimit);
                 } catch (ParseException e) {
                     e.printStackTrace();
