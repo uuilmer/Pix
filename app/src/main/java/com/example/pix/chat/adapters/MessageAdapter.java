@@ -110,6 +110,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             if (pic != null && !message.isSnap()) {
                 this.contentPic.setVisibility(View.VISIBLE);
                 Glide.with(context).load(pic.getUrl()).into(this.contentPic);
+
+                // Allow the User to view a picture in full-screen
+                this.contentPic.setOnClickListener(unusedView -> {
+                    ParseFile picture = message.getPic();
+                    Glide.with(context).load(picture.getUrl()).into(snapContainer);
+                    snapContainer.setVisibility(View.VISIBLE);
+
+                    // If we click this new Imageview...
+                    snapContainer.setOnClickListener(unusedView1 -> {
+                        // Get rid of the picture
+                        snapContainer.setImageResource(0);
+                        snapContainer.setVisibility(View.GONE);
+
+                        // No more interaction with the full-screen ImageView
+                        snapContainer.setOnClickListener(null);
+                    });
+                });
             }
 
 

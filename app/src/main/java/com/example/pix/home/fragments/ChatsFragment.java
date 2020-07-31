@@ -89,7 +89,11 @@ public class ChatsFragment extends Fragment {
             // Whenever we try to refresh, delete all Chats, and get them again
             layout.setRefreshStyle(PullRefreshLayout.STYLE_WATER_DROP);
 
-            lowerLimit = chats.get(0).getUpdatedAt();
+            if (chats.size() == 0) {
+                lowerLimit = null;
+            } else {
+                lowerLimit = chats.get(0).getUpdatedAt();
+            }
             layout.setOnRefreshListener(() -> {
                 try {
                     Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
@@ -113,7 +117,11 @@ public class ChatsFragment extends Fragment {
                         chatsAdapter.notifyDataSetChanged();
                         layout.setRefreshing(false);
                         // Our newest message is now newer
-                        lowerLimit = chats.get(0).getUpdatedAt();
+                        if (chats.size() == 0) {
+                            lowerLimit = null;
+                        } else {
+                            lowerLimit = chats.get(0).getUpdatedAt();
+                        }
                     }, lowerLimit);
                 } catch (ParseException e) {
                     e.printStackTrace();
