@@ -14,14 +14,17 @@ public class HomeActivity extends AppCompatActivity {
 
     SpotifyAppRemote mSpotifyAppRemote;
     public static final int RESULT_LOAD_IMG = 100;
+    public static HomeFragment homeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        this.homeFragment = new HomeFragment();
+
         // The home activity first contains the HomeFragment, which can potentially replace itself with a ProfileFragment
-        getSupportFragmentManager().beginTransaction().replace(R.id.home_profile, new HomeFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.home_profile, homeFragment).commit();
 
 
         /*LinearLayout homeContainer = findViewById(R.id.home_container);

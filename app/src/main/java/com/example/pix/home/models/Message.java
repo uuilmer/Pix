@@ -36,7 +36,7 @@ public class Message extends ParseObject {
     }
 
     public Date getTime() {
-        return getCreatedAt();
+        return getUpdatedAt();
     }
 
     public String getText() {

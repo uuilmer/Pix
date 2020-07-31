@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,12 +21,15 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.List;
 
 import static com.example.pix.home.models.Chat.USER_ONE;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_TWO;
+import static com.example.pix.home.models.Chat.VISIBLE_ONE;
+import static com.example.pix.home.models.Chat.VISIBLE_TWO;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
@@ -98,11 +102,42 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     newChat.setUser(ParseUser.getCurrentUser());
                     newChat.setFriend(user);
                     newChat.saveInBackground(e -> {
+                        if (e != null) {
+                            System.out.println(e.getMessage());
+                            return;
+                        }
                         i.putExtra("chat", newChat.getObjectId());
                         context.startActivity(i);
                     });
                     return;
                 }
+
+
+                // Action after we unarchive
+                SaveCallback callback = e -> {
+                    if (e != null) {
+                        Toast.makeText(context, "Error unarchiving Chat", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    i.putExtra("chat", chat.getObjectId());
+                    context.startActivity(i);
+                };
+
+                // We need to unarchive this Chat if it was archived
+                if (chat.getParseUser(USER_ONE).getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                    if (!chat.getBoolean(VISIBLE_ONE)) {
+                        chat.put(VISIBLE_ONE, true);
+                        chat.saveInBackground(callback);
+                        return;
+                    }
+                } else {
+                    if (!chat.getBoolean(VISIBLE_TWO)) {
+                        chat.put(VISIBLE_TWO, true);
+                        chat.saveInBackground(callback);
+                        return;
+                    }
+                }
+                // Case where the Chat was already visible
                 i.putExtra("chat", chat.getObjectId());
                 context.startActivity(i);
             });

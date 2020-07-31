@@ -31,8 +31,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
-        android:fontFamily="sans-serif-black"
         android:transitionName="profile"
+        android:fontFamily="@font/nunito_bold"
         android:text="wilmie"
         android:textSize="20dp" />
 
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/nunito_light"
         android:text="23"
         android:textSize="17dp" />
 
@@ -49,7 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:fontFamily="sans-serif-black"
+        android:fontFamily="@font/nunito_bold"
         android:text="Profile Pic"
         android:textSize="18dp" />
 
@@ -72,7 +72,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:layout_weight="1"
-            android:fontFamily="sans-serif-thin"
+            android:fontFamily="@font/nunito_light"
             android:text="Change Profile Pic"
             android:textSize="20dp" />
 
@@ -109,7 +109,7 @@
             android:layout_gravity="bottom"
             android:background="@drawable/rounded_corners"
             android:backgroundTint="#E91E63"
-            android:fontFamily="sans-serif-black"
+            android:fontFamily="@font/nunito_bold"
             android:text="Sign Out"
             android:textColor="#FFFFFF"
             android:textSize="20dp" />
