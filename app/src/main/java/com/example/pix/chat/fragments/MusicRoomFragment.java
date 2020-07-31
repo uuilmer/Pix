@@ -19,6 +19,7 @@ import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
 import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
+import com.jackandphantom.androidlikebutton.AndroidLikeButton;
 import com.parse.DeleteCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
@@ -95,21 +96,21 @@ public class MusicRoomFragment extends Fragment {
             Toast.makeText(getContext(), "Error creating MusicRoom", Toast.LENGTH_SHORT).show();
         }
 
-        ImageView ivLike = view.findViewById(R.id.musicroom_like);
+        AndroidLikeButton albLike = view.findViewById(R.id.like);
         likesThisStreamer = Like.checkIfLikes(ParseUser.getCurrentUser(), musicRoom.getUser());
 
         if (likesThisStreamer == null) {
-            ivLike.setImageResource(R.drawable.unlike);
+            albLike.setCurrentlyLiked(false);
         } else {
-            ivLike.setImageResource(R.drawable.like);
+            albLike.setCurrentlyLiked(true);
         }
 
         if (isOwner) {
-            ivLike.setVisibility(View.GONE);
+            albLike.setVisibility(View.GONE);
         } else {
-            // When we click like, create a new Like and save
-            ivLike.setOnClickListener(unusedView -> {
-                if (likesThisStreamer == null) {
+            albLike.setOnLikeEventListener(new AndroidLikeButton.OnLikeEventListener() {
+                @Override
+                public void onLikeClicked(AndroidLikeButton androidLikeButton) {
                     likesThisStreamer = new Like();
                     likesThisStreamer.setListener(ParseUser.getCurrentUser());
                     likesThisStreamer.setStreamer(ownerOfRoom);
@@ -118,16 +119,20 @@ public class MusicRoomFragment extends Fragment {
                             Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        ivLike.setImageResource(R.drawable.like);
+                        albLike.setCurrentlyLiked(true);
                     });
-                } else {
+                }
+
+                @Override
+                public void onUnlikeClicked(AndroidLikeButton androidLikeButton) {
                     // When we click unlike, delete the current Like
                     likesThisStreamer.deleteInBackground(e -> {
                         if (e != null) {
                             Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        ivLike.setImageResource(R.drawable.unlike);
+                        albLike.setCurrentlyLiked(false);
+
                         likesThisStreamer = null;
                     });
                 }
@@ -286,6 +291,8 @@ public class MusicRoomFragment extends Fragment {
                             // Update our local Parse objects
                             musicRoom = q.getFirst();
                             Song checkForChange = musicRoom.getCurrentSong().fetch();
+
+                            if (checkForChange == null) return;
                             // If the song changes, play this new song
                             if (!checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
                                 nowPlayingInParse = checkForChange;

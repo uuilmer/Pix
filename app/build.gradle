@@ -71,4 +71,7 @@ dependencies {
 
     // For the cool home refresh animation
     implementation 'com.baoyz.pullrefreshlayout:library:1.2.0'
+
+    // Like button
+    implementation 'com.jackandphantom.android:androidlikebutton:1.2.0'
 }

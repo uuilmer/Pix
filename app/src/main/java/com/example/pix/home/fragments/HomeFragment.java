@@ -3,10 +3,7 @@ package com.example.pix.home.fragments;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.transition.AutoTransition;
 import android.transition.Explode;
-import android.transition.Fade;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +24,8 @@ import com.example.pix.home.models.Like;
 import com.example.pix.home.utils.PopupHelper;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseFile;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;

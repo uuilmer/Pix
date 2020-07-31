@@ -15,20 +15,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:gravity="center">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:id="@+id/musicroom_like"
-                android:layout_width="60dp"
-                android:layout_height="60dp"/>
-
-        </LinearLayout>
+        <com.jackandphantom.androidlikebutton.AndroidLikeButton
+            android:id="@+id/like"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:gravity="center"
+            app:circle_endColor="#f4ac1b"
+            app:circle_startColor="#fcd229"
+            app:dot_color_1="#f5ce31"
+            app:dot_color_2="#ed8128"
+            app:like_icon="@drawable/like"
+            app:unlike_icon="@drawable/unlike" />
 
 
     </LinearLayout>
@@ -36,6 +36,7 @@
     <ImageView
         android:id="@+id/musicroom_playing"
         android:layout_width="80dp"
-        android:layout_height="80dp" />
+        android:layout_height="80dp"
+        android:layout_gravity="center" />
 
 </LinearLayout>
