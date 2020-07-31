@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.transition.Explode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,11 +76,8 @@ public class ProfileFragment extends Fragment {
 
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
-        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-                .replace(R.id.home_profile, HomeActivity.homeFragment)
-                .commit());
-        (view.findViewById(R.id.profile_back)).setOnClickListener(view12 -> getActivity().onBackPressed());
+        setExitTransition(new Explode());
+        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getActivity().onBackPressed());
 
         profile = view.findViewById(R.id.profile_pic);
 

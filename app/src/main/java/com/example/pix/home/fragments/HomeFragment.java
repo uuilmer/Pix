@@ -23,12 +23,15 @@ import androidx.viewpager.widget.ViewPager;
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
+import com.example.pix.home.models.Like;
 import com.example.pix.home.utils.PopupHelper;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +59,16 @@ public class HomeFragment extends Fragment {
 
         mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
 
-        ImageView profile = view.findViewById(R.id.profile_pic);
+        ImageView profile = view.findViewById(R.id.home_profile_icon);
+        TextView pix = view.findViewById(R.id.tv_score);
+
+        // Set the current Pix Score
+        pix.setText("" + Like.getPix(ParseUser.getCurrentUser()));
 
         // Set the User profile picture
         ParseFile image = ParseUser.getCurrentUser().getParseFile(USER_PROFILE_CODE);
         if (image != null) {
-            Glide.with(getContext()).load(image.getUrl()).circleCrop().into(profile);
+            Glide.with(view).load(image.getUrl()).circleCrop().into(profile);
         }
 
         ProfileFragment profileFragment = new ProfileFragment(ParseUser.getCurrentUser());
@@ -77,7 +84,6 @@ public class HomeFragment extends Fragment {
             getActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .addSharedElement(profile, "profile")
                     .addToBackStack(null)
                     .replace(R.id.home_profile, profileFragment)
                     .commit();
@@ -123,7 +129,7 @@ public class HomeFragment extends Fragment {
                         as the icon tints. */
                     int scaled = (int) (positionOffset * MAX_ALPHA);
                     headerBackground.setAlpha(MAX_ALPHA - scaled);
-                    profile.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    profile.setAlpha((float) (1 - (positionOffset * 0.8)));
                     svChats.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
                     pix.setTextColor(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
                 }
