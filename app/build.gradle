@@ -74,4 +74,7 @@ dependencies {
 
     // Like button
     implementation 'com.jackandphantom.android:androidlikebutton:1.2.0'
+
+    // Ripple affect
+    implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
 }

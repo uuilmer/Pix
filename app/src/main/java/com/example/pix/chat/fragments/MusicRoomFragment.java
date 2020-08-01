@@ -25,6 +25,7 @@ import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.skyfishjy.library.RippleBackground;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.Timer;
@@ -44,7 +45,7 @@ public class MusicRoomFragment extends Fragment {
     private SpotifyAppRemote remote;
     private ParseQuery<MusicRoom> q;
     public static boolean isOwner;
-    private ImageView playingGif;
+    private RippleBackground rippleBackground;
     private MusicRoom musicRoom;
     private boolean isPlayingLocally;
     private Song nowPlayingInParse;
@@ -141,9 +142,7 @@ public class MusicRoomFragment extends Fragment {
 
         // Retrieve the button we will click to start streaming and stop (play)
         ivPlay = view.findViewById(R.id.musicroom_play);
-        playingGif = view.findViewById(R.id.musicroom_playing);
-        Glide.with(getContext()).load(Uri.parse("android.resource://com.example.pix/" + R.drawable.musicroom_playing)).into(playingGif);
-        playingGif.setVisibility(View.INVISIBLE);
+        rippleBackground = view.findViewById(R.id.ripple);
 
         // Try to get the current Song
         nowPlayingInParse = musicRoom.getCurrentSong();
@@ -210,7 +209,7 @@ public class MusicRoomFragment extends Fragment {
             if (listenerTimer != null) {
                 isPlayingLocally = true;
                 ivPlay.setImageResource(R.drawable.musicroom_pause);
-                playingGif.setVisibility(View.VISIBLE);
+                rippleBackground.startRippleAnimation();
             } else {
                 ivPlay.setImageResource(R.drawable.musicroom_play);
             }
@@ -246,7 +245,7 @@ public class MusicRoomFragment extends Fragment {
     private void startStream() {
         // Start the disk spinning to show that we are streaming/ listening
         ivPlay.setImageResource(R.drawable.musicroom_pause);
-        playingGif.setVisibility(View.VISIBLE);
+        rippleBackground.startRippleAnimation();
         try {
             musicRoom = q.getFirst();
             // Fetch the song that's playing at the moment
@@ -291,10 +290,16 @@ public class MusicRoomFragment extends Fragment {
                             // Update our local Parse objects
                             musicRoom = q.getFirst();
                             Song checkForChange = musicRoom.getCurrentSong().fetch();
-
-                            if (checkForChange == null) return;
+                            if (musicRoom.getCurrentSong() == null) {
+                                return;
+                            }
+                            if (checkForChange.getURI() == null) {
+                                nowPlayingInParse = checkForChange;
+                                remote.getPlayerApi().pause();
+                                return;
+                            }
                             // If the song changes, play this new song
-                            if (!checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
+                            if (nowPlayingInParse.getURI() == null || !checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
                                 nowPlayingInParse = checkForChange;
                                 remote.getPlayerApi().play(checkForChange.getURI());
                             }
@@ -321,7 +326,7 @@ public class MusicRoomFragment extends Fragment {
 
     private void stopStream() {
         // Stop the spinning disk since we will no longer be playing/streaming a stream
-        playingGif.setVisibility(View.GONE);
+        rippleBackground.stopRippleAnimation();
 
         // If we were listening to a stream via a listenerTimer, stop it
         if (listenerTimer != null) {
