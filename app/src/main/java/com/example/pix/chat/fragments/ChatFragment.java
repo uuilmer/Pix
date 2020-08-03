@@ -87,7 +87,7 @@ public class ChatFragment extends Fragment {
         requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERM);
 
         // Use the objectId we passed to get this Chat
-        String chatId = getActivity().getIntent().getStringExtra("chat");
+        String chatId = getActivity().getIntent().getStringExtra(CHAT);
         chat = Chat.getChat(chatId);
 
 
@@ -101,14 +101,14 @@ public class ChatFragment extends Fragment {
         ivNewPic = view.findViewById(R.id.chat_image);
 
         // If we click the camera, go to the ComposeFragment
-        ivCamera.setOnClickListener(view1 -> {
+        ivCamera.setOnClickListener(unusedView -> {
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.friend_container, new ComposeFragment())
                     .commit();
         });
 
-        ivBack.setOnClickListener(view1 -> getActivity().finish());
+        ivBack.setOnClickListener(unusedView -> getActivity().finish());
 
         ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
@@ -143,7 +143,7 @@ public class ChatFragment extends Fragment {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
-        ivProfile.setOnClickListener(view12 -> getParentFragmentManager()
+        ivProfile.setOnClickListener(unusedView -> getParentFragmentManager()
                 .beginTransaction()
                 .addToBackStack("stack")
                 .replace(R.id.friend_container, new ProfileFragment(friend))
@@ -180,7 +180,7 @@ public class ChatFragment extends Fragment {
             manager.scrollToPosition(0);
 
             // When we press enter, save this text as a new Message within this Chat and scroll to the latest message
-            etText.setOnKeyListener((view1, i, keyEvent) -> {
+            etText.setOnKeyListener((unusedView, i, keyEvent) -> {
                 if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
                     // Create new message
                     Message newMessage = new Message();

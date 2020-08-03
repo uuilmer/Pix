@@ -165,7 +165,7 @@ public class MusicRoomFragment extends Fragment {
             } else {
                 ivPlay.setImageResource(R.drawable.musicroom_play);
             }
-            ivPlay.setOnClickListener(view1 -> startSync());
+            ivPlay.setOnClickListener(unusedView -> startSync());
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Cannot set up Stream!", Toast.LENGTH_SHORT).show();
@@ -194,7 +194,7 @@ public class MusicRoomFragment extends Fragment {
         isPlayingLocally = !isPlayingLocally;
     }
 
-    private void startStream(){
+    private void startStream() {
         // Start the disk spinning to show that we are streaming/ listening
         ivPlay.setImageResource(R.drawable.musicroom_pause);
         playingGif.setVisibility(View.VISIBLE);
@@ -213,8 +213,9 @@ public class MusicRoomFragment extends Fragment {
                     if (!playerState.track.uri.equals(nowPlayingInParse.getURI())) {
                         nowPlayingInParse.setURI(playerState.track.uri);
                         nowPlayingInParse.saveInBackground(e -> {
-                            if (e != null)
+                            if (e != null) {
                                 Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                            }
                         });
                     }
                     // Check if the playing/paused status changed, if so update it
@@ -222,8 +223,9 @@ public class MusicRoomFragment extends Fragment {
                         isPlayingInParse = !playerState.isPaused;
                         nowPlayingInParse.setPlaying(isPlayingInParse);
                         nowPlayingInParse.saveInBackground(e -> {
-                            if (e != null)
+                            if (e != null) {
                                 Toast.makeText(getContext(), "Error updating song", Toast.LENGTH_SHORT).show();
+                            }
                         });
                     }
                 });
@@ -231,8 +233,9 @@ public class MusicRoomFragment extends Fragment {
             } else {
                 // Check if the song is currently playing
                 remote.getPlayerApi().play(nowPlayingInParse.getURI());
-                if (!isPlayingInParse)
+                if (!isPlayingInParse) {
                     remote.getPlayerApi().pause();
+                }
                 // Every fixed interval, check for updates to Parse
                 listenerTimer = new Timer();
                 listenerTimer.schedule(new TimerTask() {
@@ -268,7 +271,7 @@ public class MusicRoomFragment extends Fragment {
         }
     }
 
-    private void stopStream(){
+    private void stopStream() {
         // Stop the spinning disk since we will no longer be playing/streaming a stream
         playingGif.setVisibility(View.GONE);
 

@@ -23,7 +23,6 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.chat.utils.FetchPath;
-import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -59,10 +58,11 @@ public class ProfileFragment extends Fragment {
         isOwner = user.getObjectId().equals(ParseUser.getCurrentUser().getObjectId());
 
         // Assign a layout based on the above
-        if (isOwner)
+        if (isOwner) {
             return inflater.inflate(R.layout.fragment_profile, container, false);
-        else
+        } else {
             return inflater.inflate(R.layout.fragment_friend, container, false);
+        }
     }
 
     @Override
@@ -70,12 +70,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Clicking back ends this fragment
-        // Will need to figure out how to end with animation
-        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getParentFragmentManager().beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-                .replace(R.id.home_profile, HomeActivity.homeFragment)
-                .commit());
-        (view.findViewById(R.id.profile_back)).setOnClickListener(view12 -> getActivity().onBackPressed());
+        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getActivity().onBackPressed());
 
         profile = view.findViewById(R.id.profile_pic);
 
@@ -90,7 +85,7 @@ public class ProfileFragment extends Fragment {
         Button stopListening = view.findViewById(R.id.profile_stop);
         if(MusicRoomFragment.listenerTimer != null){
             stopListening.setVisibility(View.VISIBLE);
-            stopListening.setOnClickListener(view14 -> {
+            stopListening.setOnClickListener(unusedView -> {
                 MusicRoomFragment.listenerTimer.cancel();
                 MusicRoomFragment.listenerTimer = null;
                 stopListening.setVisibility(View.GONE);

@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
         // Attempt to login the User
-        (findViewById(R.id.parse_login)).setOnClickListener(view -> {
+        (findViewById(R.id.parse_login)).setOnClickListener(unusedView -> {
             String username = etUsername.getText().toString();
             String password = etPassword.getText().toString();
             ParseUser.logInInBackground(username, password, new LogInCallback() {
@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // When user clicks register, we set up their account then go to MainActivity
-        (findViewById(R.id.parse_signup)).setOnClickListener(view -> {
+        (findViewById(R.id.parse_signup)).setOnClickListener(unusedView -> {
             ParseUser newUser = new ParseUser();
             newUser.setUsername(etUsername.getText().toString());
             newUser.setPassword(etPassword.getText().toString());
@@ -86,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
-        (findViewById(R.id.auth_spotify)).setOnClickListener(view -> {
+        (findViewById(R.id.auth_spotify)).setOnClickListener(unusedView -> {
 
             // Set the connection parameters
             ConnectionParams connectionParams =

@@ -25,6 +25,7 @@ import com.parse.SaveCallback;
 
 import java.util.List;
 
+import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.USER_ONE;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_TWO;
@@ -86,7 +87,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         public void bind(ParseUser user) {
             this.tvPix.setText("" + user.getInt("pix") + "P");
-            this.llSelect.setOnClickListener(view -> {
+            this.llSelect.setOnClickListener(unusedView -> {
                 // If we select a result, we will want to go to ChatActivity
                 Intent i = new Intent(context, FriendActivity.class);
 
@@ -106,7 +107,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                             System.out.println(e.getMessage());
                             return;
                         }
-                        i.putExtra("chat", newChat.getObjectId());
+                        i.putExtra(CHAT, newChat.getObjectId());
                         context.startActivity(i);
                     });
                     return;
@@ -119,7 +120,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         Toast.makeText(context, "Error unarchiving Chat", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    i.putExtra("chat", chat.getObjectId());
+                    i.putExtra(CHAT, chat.getObjectId());
                     context.startActivity(i);
                 };
 
@@ -138,7 +139,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     }
                 }
                 // Case where the Chat was already visible
-                i.putExtra("chat", chat.getObjectId());
+                i.putExtra(CHAT, chat.getObjectId());
                 context.startActivity(i);
             });
             ParseFile pic = user.getParseFile(USER_PROFILE_CODE);

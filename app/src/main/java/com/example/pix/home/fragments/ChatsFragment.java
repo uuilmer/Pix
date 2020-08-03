@@ -34,7 +34,6 @@ public class ChatsFragment extends Fragment {
     private Date lowerLimit;
 
     public ChatsFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -99,7 +98,7 @@ public class ChatsFragment extends Fragment {
                             toRemove.add(c.getObjectId());
                         }
                         // Delete them
-                        for (Chat c : chats){
+                        for (Chat c : chats) {
                             if (toRemove.contains(c.getObjectId())) {
                                 chats.remove(c);
                             }

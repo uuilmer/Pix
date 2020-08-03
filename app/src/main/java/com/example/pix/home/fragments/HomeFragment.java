@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment {
         ImageView svChats = view.findViewById(R.id.home_search_user);
 
         // Create popup to search for friends
-        svChats.setOnClickListener(view1 -> {
+        svChats.setOnClickListener(unusedView -> {
             PopupHelper.createPopup(getActivity(), getContext(), false);
 
         });

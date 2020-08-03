@@ -146,11 +146,11 @@ public class Chat extends ParseObject {
     }
 
     public int getPix() {
-        return getInt("pix");
+        return getInt(USER_PIX);
     }
 
     public void setPix(int pix) {
-        put("pix", pix);
+        put(USER_PIX, pix);
     }
 
     // This method is for the purposes of a chat preview (Doesn't edit read receipts)

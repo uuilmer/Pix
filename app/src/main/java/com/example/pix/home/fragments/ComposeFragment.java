@@ -19,7 +19,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.pix.R;
-import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.chat.fragments.ChatFragment;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.utils.CameraPreview;
@@ -28,7 +27,6 @@ import com.parse.ParseFile;
 
 public class ComposeFragment extends Fragment {
 
-    private FriendActivity mActivity;
     public static ParseFile image;
     private int currCamera;
     private Camera camera;
@@ -119,7 +117,7 @@ public class ComposeFragment extends Fragment {
         };
 
         // When we take a pic, do the above ^
-        take.setOnClickListener(view1 -> camera.takePicture(() -> {
+        take.setOnClickListener(unusedView -> camera.takePicture(() -> {
 
         }, null, callback));
     }
@@ -132,20 +130,6 @@ public class ComposeFragment extends Fragment {
             to have a reference to Camera which was invalidated the moment we opened it in ChatFragment. To fix this
             we need to re-setup the Camera whenever a ComposeFragment is resumed. */
         setup();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof FriendActivity) {
-            mActivity = (FriendActivity) context;
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivity = null;
     }
 
     private boolean checkCameraHardware(Context context) {
