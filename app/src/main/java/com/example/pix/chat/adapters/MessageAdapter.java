@@ -23,6 +23,7 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import java.net.URLConnection;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
@@ -174,6 +175,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             }
 
             this.message = message;
+        }
+
+        public static boolean isVideoFile(String path) {
+            String mimeType = URLConnection.guessContentTypeFromName(path);
+            return mimeType != null && mimeType.startsWith("video");
         }
     }
 }

@@ -1,54 +1,54 @@
 package com.example.pix.home.fragments;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
 import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.activities.HomeActivity;
-import com.example.pix.home.adapters.SearchAdapter;
 import com.example.pix.home.utils.CameraPreview;
 import com.example.pix.home.utils.PopupHelper;
 import com.parse.ParseFile;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 public class ComposeFragment extends Fragment {
 
+    private static final int RECORD_AUDIO = 1000;
+    private static final int MAX_CLICK_DURATION = 200;
+    private long startClickTime;
     private FriendActivity mActivity;
-    public static ParseFile image;
+    public static ParseFile contentToSave;
     private int currCamera;
     private Camera camera;
     private CameraPreview preview;
     private FrameLayout frameLayout;
     private Button take;
+    private MediaRecorder recorder;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,6 +64,7 @@ public class ComposeFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -71,9 +72,18 @@ public class ComposeFragment extends Fragment {
         frameLayout = view.findViewById(R.id.compose_camera);
         take = view.findViewById(R.id.compose_take);
 
-        setup();
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
+
+        } else {
+
+            setup();
+
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("ClickableViewAccessibility")
     private void setup() {
         currCamera = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -118,7 +128,7 @@ public class ComposeFragment extends Fragment {
 
         // When we are done taking a picture, go to a new ChatActivity with this new Image ParseFile
         Camera.PictureCallback callback = (bytes, camera) -> {
-            image = new ParseFile(bytes);
+            contentToSave = new ParseFile(bytes);
             // Create popup to select who to send to
             if (getActivity() instanceof HomeActivity) {
                 PopupHelper.createPopup(getActivity(), getContext(), true);
@@ -127,7 +137,7 @@ public class ComposeFragment extends Fragment {
                 // thus no need for popup
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.friend_container, new ChatFragment(image))
+                        .replace(R.id.friend_container, new ChatFragment(contentToSave))
                         .commit();
             }
         };
@@ -136,8 +146,51 @@ public class ComposeFragment extends Fragment {
         take.setOnClickListener(view1 -> camera.takePicture(() -> {
 
         }, null, callback));
+
+        File path = Environment.getExternalStorageDirectory();
+        File video = new File(path, "/" + "video.mp4");
+
+        take.setOnTouchListener((unusedView, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                recorder = new MediaRecorder();
+                camera.lock();
+                camera.unlock();
+                recorder.setCamera(camera);
+                recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+                recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+                recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+                recorder.setOutputFile(video);
+                try {
+                    recorder.prepare();
+                    recorder.start();
+                    return true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Error starting Video", Toast.LENGTH_SHORT).show();
+                }
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+                recorder.stop();
+                contentToSave = new ParseFile(video);
+                recorder.release();
+                if (getActivity() instanceof HomeActivity) {
+                    PopupHelper.createPopup(getActivity(), getContext(), true);
+                } else {
+                    // Case where this ComposeFragment was called from ChatActivity so we know who to send it to
+                    // thus no need for popup
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.friend_container, new ChatFragment(contentToSave))
+                            .commit();
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onResume() {
         super.onResume();
@@ -164,5 +217,15 @@ public class ComposeFragment extends Fragment {
 
     private boolean checkCameraHardware(Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == RECORD_AUDIO) {
+            setup();
+        }
     }
 }
