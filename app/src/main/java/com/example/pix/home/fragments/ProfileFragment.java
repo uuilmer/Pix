@@ -85,20 +85,20 @@ public class ProfileFragment extends Fragment {
                 .circleCrop()
                 .into(profile);
 
-        // If we have a listenerTimer in MusicRoomFragment, we must make it possible to end it.
-        Button stopListening = view.findViewById(R.id.profile_stop);
-        if (MusicRoomFragment.listenerTimer != null) {
-            stopListening.setVisibility(View.VISIBLE);
-            stopListening.setOnClickListener(view14 -> {
-                MusicRoomFragment.listenerTimer.cancel();
-                MusicRoomFragment.listenerTimer = null;
-                stopListening.setVisibility(View.GONE);
-            });
-        }
-
         // We need to differentiate if this ProfileFragment is a friend or the user
         // because we use a different xml layout for each case.
         if (isOwner) {
+            // If we have a listenerTimer in MusicRoomFragment, we must make it possible to end it.
+            Button stopListening = view.findViewById(R.id.profile_stop);
+            if (MusicRoomFragment.listenerTimer != null) {
+                stopListening.setVisibility(View.VISIBLE);
+                stopListening.setOnClickListener(view14 -> {
+                    MusicRoomFragment.listenerTimer.cancel();
+                    MusicRoomFragment.listenerTimer = null;
+                    stopListening.setVisibility(View.GONE);
+                });
+            }
+
             // If we press "Enter" in the username EditText, update the username
             EditText name = view.findViewById(R.id.profile_name);
             name.setText("" + user.getUsername());

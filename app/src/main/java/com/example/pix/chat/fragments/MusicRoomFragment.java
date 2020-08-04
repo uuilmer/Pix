@@ -1,5 +1,7 @@
 package com.example.pix.chat.fragments;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,8 +17,10 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
+import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.jackandphantom.androidlikebutton.AndroidLikeButton;
@@ -30,8 +34,12 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.client.Subscription;
 import com.spotify.protocol.types.PlayerState;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 
 public class MusicRoomFragment extends Fragment {
@@ -166,7 +174,7 @@ public class MusicRoomFragment extends Fragment {
             ivPlay.setImageResource(R.drawable.musicroom_play);
         }
         ivPlay.setOnClickListener(view1 -> {
-            // If we have no SOng, make one
+            // If we have no Song, make one
             if (nowPlayingInParse == null) seekSong();
             else startSync();
         });
@@ -194,24 +202,20 @@ public class MusicRoomFragment extends Fragment {
                 });
             });
             // If the user is a listener and there is no Song, they must wait until the MusicRoom has a Song
-        } else
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        musicRoom = q.getFirst();
-                        nowPlayingInParse = musicRoom.getCurrentSong();
-                        if (nowPlayingInParse != null) {
-                            startSync();
-                            this.cancel();
-                        }
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getContext(), "Error looking for new Song!", Toast.LENGTH_SHORT).show();
-                        this.cancel();
-                    }
+        } else {
+            try {
+                musicRoom = q.getFirst();
+                nowPlayingInParse = musicRoom.getCurrentSong();
+                if (nowPlayingInParse != null) {
+                    startSync();
+                } else {
+                    Toast.makeText(getContext(), ownerOfRoom.getUsername() + " is not Streaming", Toast.LENGTH_SHORT).show();
                 }
-            }, 0, 50);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Error getting Current Song!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     // This method is called whenever the PLAY/PAUSE button is clicked (It starts/stops the stream)
@@ -236,7 +240,7 @@ public class MusicRoomFragment extends Fragment {
 
     private void startStream() {
         // Start the disk spinning to show that we are streaming/ listening
-        ivPlay.setImageResource(R.drawable.musicroom_pause);
+        getActivity().runOnUiThread(() -> ivPlay.setImageResource(R.drawable.musicroom_pause));
         rippleBackground.startRippleAnimation();
         try {
             musicRoom = q.getFirst();
@@ -275,16 +279,21 @@ public class MusicRoomFragment extends Fragment {
                     remote.getPlayerApi().pause();
                 // Every fixed interval, check for updates to Parse
                 listenerTimer = new Timer();
+                Activity musicRoomActivity = getActivity();
                 listenerTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         try {
                             // Update our local Parse objects
                             musicRoom = q.getFirst();
-                            Song checkForChange = musicRoom.getCurrentSong().fetch();
-                            if (musicRoom.getCurrentSong() == null) {
+                            Song checkForChange = musicRoom.getCurrentSong();
+                            if (checkForChange == null) {
+                                musicRoomActivity.runOnUiThread(() -> {
+                                    stopStream();
+                                });
                                 return;
                             }
+                            checkForChange.fetch();
                             if (checkForChange.getURI() == null) {
                                 nowPlayingInParse = checkForChange;
                                 remote.getPlayerApi().pause();
@@ -323,6 +332,7 @@ public class MusicRoomFragment extends Fragment {
         // If we were listening to a stream via a listenerTimer, stop it
         if (listenerTimer != null) {
             listenerTimer.cancel();
+            listenerTimer = null;
         }
         // If we were streaming as the owner, stop
         if (isOwner) {
@@ -334,15 +344,16 @@ public class MusicRoomFragment extends Fragment {
                 // Delete the reference to the Song that was playing from the MusicRoom
                 musicRoom.remove(NOW_PLAYING);
                 musicRoom.save();
-                // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
-                // We need this alert to the method because this method is run every time we start/stop the stream,
-                // and we thus need to make sure the Song we use in this method is valid.
-                nowPlayingInParse = null;
             } catch (ParseException e) {
                 e.printStackTrace();
                 Toast.makeText(getContext(), "Error deleting Sync Connection", Toast.LENGTH_SHORT).show();
             }
         }
+        // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
+        // We need this alert to the method because this method is run every time we start/stop the stream,
+        // and we thus need to make sure the Song we use in this method is valid.
+        nowPlayingInParse = null;
+
         ivPlay.setImageResource(R.drawable.musicroom_play);
     }
 }
