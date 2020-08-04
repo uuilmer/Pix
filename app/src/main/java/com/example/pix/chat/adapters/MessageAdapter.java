@@ -3,14 +3,16 @@ package com.example.pix.chat.adapters;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -23,21 +25,22 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
-import java.net.URLConnection;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
     private Context context;
     private List<Message> messages;
-    private ImageView snapContainer;
+    private ImageView imageContainer;
+    private VideoView videoContainer;
     // Commented out code is attempt to combine two consecutive messages by the same sender into one
     //List<ViewHolder> viewHolders;
 
-    public MessageAdapter(Context context, List<Message> messages, ImageView snapContainer) {
+    public MessageAdapter(Context context, List<Message> messages, ImageView imageContainer, VideoView videoContainer) {
         this.context = context;
         this.messages = messages;
-        this.snapContainer = snapContainer;
+        this.imageContainer = imageContainer;
+        this.videoContainer = videoContainer;
         //this.viewHolders = new ArrayList<>();
     }
 
@@ -50,7 +53,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(position, messages, context, snapContainer);
+        holder.bind(position, messages, context, imageContainer, videoContainer);
     }
 
     @Override
@@ -78,7 +81,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.snapText = itemView.findViewById(R.id.message_snap_text);
         }
 
-        public void bind(int position, List<Message> messages, Context context, ImageView snapContainer) {
+        public void bind(int position, List<Message> messages, Context context, ImageView imageContainer, VideoView videoContainer) {
             this.contentPic.setVisibility(View.GONE);
             this.name.setVisibility(View.VISIBLE);
 
@@ -98,7 +101,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 e.printStackTrace();
             }
 
-            // Only show text attachment if not a Snap pic
+            // Only show text attachment if not a Snap content
             this.text.setVisibility(View.GONE);
             if (message.getText() != null && !message.getText().equals("") && !message.isSnap()) {
                 this.text.setVisibility(View.VISIBLE);
@@ -106,54 +109,54 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             }
 
 
-            ParseFile pic = message.getPic();
-            // Only show pic attachment if not a Snap pic
-            if (pic != null && !message.isSnap()) {
+            ParseFile content = message.getPic();
+            // Only show content attachment if not a Snap content
+            if (content != null && !message.isSnap()) {
                 this.contentPic.setVisibility(View.VISIBLE);
-                Glide.with(context).load(pic.getUrl()).into(this.contentPic);
+                Glide.with(context).load(content.getUrl()).into(this.contentPic);
 
                 // Allow the User to view a picture in full-screen
                 this.contentPic.setOnClickListener(unusedView -> {
-                    ParseFile picture = message.getPic();
-                    Glide.with(context).load(picture.getUrl()).into(snapContainer);
-                    snapContainer.setVisibility(View.VISIBLE);
+                    Glide.with(context).load(content.getUrl()).into(imageContainer);
+                    imageContainer.setVisibility(View.VISIBLE);
 
                     // If we click this new Imageview...
-                    snapContainer.setOnClickListener(unusedView1 -> {
+                    imageContainer.setOnClickListener(unusedView1 -> {
                         // Get rid of the picture
-                        snapContainer.setImageResource(0);
-                        snapContainer.setVisibility(View.GONE);
+                        imageContainer.setImageResource(0);
+                        imageContainer.setVisibility(View.GONE);
 
                         // No more interaction with the full-screen ImageView
-                        snapContainer.setOnClickListener(null);
+                        imageContainer.setOnClickListener(null);
                     });
                 });
             }
 
 
-            // If this is a Snap picture...
+            // If this is a Snap content...
             if (message.isSnap()) {
-                // Show the snap layout
+                // Show the snap layout(To represent a message)
                 this.openSnap.setVisibility(View.VISIBLE);
 
                 // If this User sent it, they can't open the Snap
                 if (message.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
                     this.snapText.setText("Delivered");
                 } else {
-                    // If this User received the Snap picture, if they click the layout...
+                    // If this User received the Snap content, if they click the layout...
                     this.openSnap.setOnClickListener(unusedView -> {
-                        // Set up the picture as an ImageView that lives in ChatFragment
-                        // This ImageView is placed above the who Chat with a friend with visibility Gone,
+                        // Set up the content as an ImageView or VideoView that lives in ChatFragment
+                        // Both of these are placed above Chat with a friend with visibility Gone,
                         // so we change it to visible and it will cover the screen
-                        ParseFile picture = message.getPic();
-                        Glide.with(context).load(picture.getUrl()).into(snapContainer);
-                        snapContainer.setVisibility(View.VISIBLE);
 
-                        // If we click this new Imageview...
-                        snapContainer.setOnClickListener(unusedView1 -> {
-                            // Get rid of the Snap picture and hide the big ImageView
-                            snapContainer.setImageResource(0);
-                            snapContainer.setVisibility(View.GONE);
+                        // This happens if we click the full screen content(For both pic and video)...
+                        View.OnClickListener callback = unusedView1 -> {
+                            // Get rid of the Snap image and hide the big ImageView
+                            imageContainer.setImageResource(0);
+                            imageContainer.setVisibility(View.GONE);
+
+                            // Get rid of the SNap video and hide the big VideoView
+                            videoContainer.suspend();
+                            videoContainer.setVisibility(View.GONE);
 
 
                             Drawable buttonDrawable = this.snapIndicator.getBackground();
@@ -167,19 +170,42 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                             this.snapText.setText("Opened");
 
                             // No more interaction with this empty Snap
-                            snapContainer.setOnClickListener(null);
+                            imageContainer.setOnClickListener(null);
+                            videoContainer.setOnClickListener(null);
                             this.openSnap.setOnClickListener(null);
-                        });
+                        };
+
+                        // If the url ends with mp4, then this must be a video snap
+                        if (content.getUrl().endsWith(".mp4")) {
+                            // Show the big VideView
+                            videoContainer.setVisibility(View.VISIBLE);
+
+                            // Show the big ImageView(This was done to serve as a background,
+                            // as attempting to cahnge the background of the VideoView was very complex)
+                            imageContainer.setVisibility(View.VISIBLE);
+
+                            // Set up the looping Snap video
+                            Uri video = Uri.parse(content.getUrl());
+                            videoContainer.setVideoURI(video);
+                            videoContainer.setOnPreparedListener(mp -> {
+                                mp.setLooping(true);
+                                videoContainer.start();
+                            });
+
+                            // When we click the video, end it
+                            videoContainer.setOnClickListener(callback);
+                        } else {
+                            // Case where Snap content is picture
+                            Glide.with(context).load(content.getUrl()).into(imageContainer);
+                            imageContainer.setVisibility(View.VISIBLE);
+
+                            imageContainer.setOnClickListener(callback);
+                        }
                     });
                 }
             }
 
             this.message = message;
-        }
-
-        public static boolean isVideoFile(String path) {
-            String mimeType = URLConnection.guessContentTypeFromName(path);
-            return mimeType != null && mimeType.startsWith("video");
         }
     }
 }

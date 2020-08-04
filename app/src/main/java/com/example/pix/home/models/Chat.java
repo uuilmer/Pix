@@ -177,10 +177,13 @@ public class Chat extends ParseObject {
 
         // If the user that requested these Messages is the one who they were sent to, mark as read
         if (this.getStatus() == 1) {
-            ParseUser recipient = getFirstMessage().getTo().fetchIfNeeded();
-            if (recipient.getObjectId().equals(requester.getObjectId())) {
-                this.setStatus(0);
-                this.save();
+            Message latestMessage = getFirstMessage();
+            if (latestMessage != null) {
+                ParseUser recipient = latestMessage.getTo().fetchIfNeeded();
+                if (recipient.getObjectId().equals(requester.getObjectId())) {
+                    this.setStatus(0);
+                    this.save();
+                }
             }
         }
 

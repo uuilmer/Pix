@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -160,9 +161,11 @@ public class ChatFragment extends Fragment {
 
         try {
             // This large ImageView covers the entire ChatFragment and will be used to display Snaps
-            ImageView snapContainer = view.findViewById(R.id.chat_snap_pic);
+            // Same goes for the large VideoView
+            ImageView imageContainer = view.findViewById(R.id.chat_snap_pic);
+            VideoView videoContainer = view.findViewById(R.id.chat_snap_vid);
             messages = chat.getMessages(0, ParseUser.getCurrentUser());
-            messageAdapter = new MessageAdapter(getContext(), messages, snapContainer);
+            messageAdapter = new MessageAdapter(getContext(), messages, imageContainer, videoContainer);
             rvMessages.setAdapter(messageAdapter);
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
@@ -218,8 +221,7 @@ public class ChatFragment extends Fragment {
             // Record the last message we received's time
             if (messages.size() == 0) {
                 lastMessage = null;
-            }
-            else {
+            } else {
                 lastMessage = messages.get(0).getTime();
             }
             new Timer().schedule(new TimerTask() {

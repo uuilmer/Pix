@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,12 +36,14 @@ import com.parse.ParseFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ComposeFragment extends Fragment {
 
     private static final int RECORD_AUDIO = 1000;
     private static final int MAX_CLICK_DURATION = 200;
-    private long startClickTime;
     private FriendActivity mActivity;
     public static ParseFile contentToSave;
     private int currCamera;
@@ -49,6 +52,7 @@ public class ComposeFragment extends Fragment {
     private FrameLayout frameLayout;
     private Button take;
     private MediaRecorder recorder;
+    private long timeclicked;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -73,13 +77,9 @@ public class ComposeFragment extends Fragment {
         take = view.findViewById(R.id.compose_take);
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
-
         } else {
-
             setup();
-
         }
     }
 
@@ -91,6 +91,11 @@ public class ComposeFragment extends Fragment {
 
         // Set as Portrait
         camera.setDisplayOrientation(90);
+        // I needed to change the Camera itself's rotation, because it was displaying correctly,
+        // but the pictures it was taking were rotated
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setRotation(270);
+        camera.setParameters(parameters);
 
         // Create the preview and set as the FrameLayout
         preview = new CameraPreview(getContext(), camera);
@@ -111,6 +116,9 @@ public class ComposeFragment extends Fragment {
                     }
                     camera = Camera.open(currCamera);
                     camera.setDisplayOrientation(90);
+                    Camera.Parameters parameters = camera.getParameters();
+                    parameters.setRotation(270);
+                    camera.setParameters(parameters);
                     preview = new CameraPreview(getContext(), camera);
                     frameLayout.removeAllViews();
                     frameLayout.addView(preview);
@@ -142,38 +150,58 @@ public class ComposeFragment extends Fragment {
             }
         };
 
-        // When we take a pic, do the above ^
-        take.setOnClickListener(view1 -> camera.takePicture(() -> {
-
-        }, null, callback));
-
+        // Create a File in our external storage(We can't write into local storage)
         File path = Environment.getExternalStorageDirectory();
         File video = new File(path, "/" + "video.mp4");
 
+        Timer startRecord = new Timer();
+        // When we touch the take snap content icon...
         take.setOnTouchListener((unusedView, motionEvent) -> {
+            // If this is us clicking down...
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                recorder = new MediaRecorder();
-                camera.lock();
-                camera.unlock();
-                recorder.setCamera(camera);
-                recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-                recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-                recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-                recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-                recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-                recorder.setOutputFile(video);
-                try {
-                    recorder.prepare();
-                    recorder.start();
+                // Note the current time
+                timeclicked = System.currentTimeMillis();
+                // In 200 milliseconds(MAX_CLICK_DURATION) start recording...
+                startRecord.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        recorder = new MediaRecorder();
+                        camera.lock();
+                        camera.unlock();
+                        // Set the camera, rotation, video and audio source, and our new output File
+                        recorder.setCamera(camera);
+                        recorder.setOrientationHint(270);
+                        recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+                        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+                        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+                        recorder.setOutputFile(video);
+                        try {
+                            recorder.prepare();
+                            recorder.start();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "Error starting Video", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, MAX_CLICK_DURATION);
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                // If it hasn't been 200 millis yet, and we just let go of the take button, it was a single click..
+                if (System.currentTimeMillis() - timeclicked < MAX_CLICK_DURATION) {
+                    // We cancel the video, take a pic and call our callback
+                    startRecord.cancel();
+                    camera.takePicture(() -> {
+                    }, null, callback);
                     return true;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), "Error starting Video", Toast.LENGTH_SHORT).show();
                 }
-            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+                // If we let go of the take button sometime after 200 millis, the video must have started...
+                // Stop it, save it as ParseFile..
                 recorder.stop();
                 contentToSave = new ParseFile(video);
                 recorder.release();
+
+                // If we are in HomeActivity, we need to figure out who to send the Snap to, so create a popup
                 if (getActivity() instanceof HomeActivity) {
                     PopupHelper.createPopup(getActivity(), getContext(), true);
                 } else {
