@@ -49,6 +49,13 @@ public class LoginActivity extends AppCompatActivity {
         final EditText etUsername = findViewById(R.id.entered_username);
         final EditText etPassword = findViewById(R.id.entered_password);
 
+        // If we already have a User logged in, reflect that
+        if (ParseUser.getCurrentUser() != null) {
+            loggedIn = true;
+            (findViewById(R.id.parse_container)).setVisibility(View.GONE);
+            checkIfDone();
+        }
+
 
         // Attempt to login the User
         (findViewById(R.id.parse_login)).setOnClickListener(view -> {
