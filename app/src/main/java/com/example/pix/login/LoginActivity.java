@@ -56,6 +56,13 @@ public class LoginActivity extends AppCompatActivity {
             checkIfDone();
         }
 
+        // If we signed out, we have already made a Spotify Remote
+        if (mSpotifyAppRemote != null) {
+            // We are done Authenticating Spotify
+            (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+            checkIfDone();
+        }
+
 
         // Attempt to login the User
         (findViewById(R.id.parse_login)).setOnClickListener(view -> {
