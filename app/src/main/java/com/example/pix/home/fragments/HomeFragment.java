@@ -70,14 +70,6 @@ public class HomeFragment extends Fragment {
 
         ProfileFragment profileFragment = new ProfileFragment(ParseUser.getCurrentUser());
 
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                System.out.println("" + MusicRoomFragment.listenerTimer != null);
-            }
-        }, 0, 500);
-
-
         profileFragment.setSharedElementEnterTransition(new Explode());
         profileFragment.setEnterTransition(new Explode());
         setExitTransition(new Explode());

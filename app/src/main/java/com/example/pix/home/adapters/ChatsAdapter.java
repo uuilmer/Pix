@@ -2,6 +2,7 @@ package com.example.pix.home.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +18,15 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
+import com.example.pix.home.models.Like;
 import com.example.pix.home.models.Message;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
@@ -93,10 +97,30 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 this.tvName.setText("" + friend.getUsername());
                 this.tvStatus.setText("" + chat.getStatusText());
                 Message recent = chat.getFirstMessage();
-                this.tvTime.setText("" + (recent != null ? recent.getTime().toString() : ""));
+                this.tvTime.setText("" + (recent != null ? getRelativeTime(recent.getTime().toString()) : ""));
+                tvPix.setText("" + Like.getPix(friend) + "P");
             } catch (ParseException e) {
                 Log.e("Error", "Failed getting status text and/or time", e);
             }
+        }
+
+        public String getRelativeTime(String json_response) {
+            //Define the given format
+            String format = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
+            SimpleDateFormat sf = new SimpleDateFormat(format, Locale.ENGLISH);
+            sf.setLenient(true);
+
+            String relativeDate = "";
+            try {
+                //Get Unix Epoch and get relative from today, then call toString to get readable difference
+                long dateMillis = sf.parse(json_response).getTime();
+                relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis,
+                        System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+            } catch (java.text.ParseException e) {
+                e.printStackTrace();
+            }
+
+            return relativeDate;
         }
     }
 }
