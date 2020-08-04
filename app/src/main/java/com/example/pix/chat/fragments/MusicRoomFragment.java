@@ -279,6 +279,8 @@ public class MusicRoomFragment extends Fragment {
                     remote.getPlayerApi().pause();
                 // Every fixed interval, check for updates to Parse
                 listenerTimer = new Timer();
+                // I need to save this Activity, because I won't be able to call getActivity() if we
+                // change from FriendActivity back to HomeActivity, and our listenerTimer would throw an error
                 Activity musicRoomActivity = getActivity();
                 listenerTimer.schedule(new TimerTask() {
                     @Override
