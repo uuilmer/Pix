@@ -3,14 +3,12 @@ package com.example.pix.chat.adapters;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -30,14 +28,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private Context context;
     private List<Message> messages;
     private ImageView snapContainer;
-    // Commented out code is attempt to combine two consecutive messages by the same sender into one
-    //List<ViewHolder> viewHolders;
 
     public MessageAdapter(Context context, List<Message> messages, ImageView snapContainer) {
         this.context = context;
         this.messages = messages;
         this.snapContainer = snapContainer;
-        //this.viewHolders = new ArrayList<>();
     }
 
     @NonNull
