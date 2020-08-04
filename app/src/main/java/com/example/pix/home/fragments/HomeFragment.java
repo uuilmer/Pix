@@ -25,10 +25,17 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class HomeFragment extends Fragment {
 
     public static final int MAX_ALPHA = 255;
+    private Drawable headerBackground;
+    private ImageView profile;
+    private ImageView svChats;
+    private TextView pix;
+    private ViewPager viewPager;
 
     public HomeFragment() {
     }
@@ -60,7 +67,7 @@ public class HomeFragment extends Fragment {
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
 
-        ImageView svChats = view.findViewById(R.id.home_search_user);
+        svChats = view.findViewById(R.id.home_search_user);
 
         // Create popup to search for friends
         svChats.setOnClickListener(unusedView -> {
@@ -79,13 +86,19 @@ public class HomeFragment extends Fragment {
         colors.add(Color.GREEN);
 
 
-        ImageView profile = view.findViewById(R.id.home_profile_icon);
-        TextView pix = view.findViewById(R.id.tv_score);
-        ViewPager viewPager = view.findViewById(R.id.vpPager);
+        profile = view.findViewById(R.id.home_profile_icon);
+        pix = view.findViewById(R.id.tv_score);
+        viewPager = view.findViewById(R.id.vpPager);
         // Link the colors to each page
         LinearLayout header = view.findViewById(R.id.header);
-        Drawable headerBackground = header.getBackground();
+        headerBackground = header.getBackground();
         headerBackground.setAlpha(0);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("header" + headerBackground.getAlpha());
+            }
+        }, 0, 500);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -125,5 +138,12 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        // Whenever we resume this Fragment, ensure that the header is styled correctly
+        int scaled = viewPager.getCurrentItem() * MAX_ALPHA;
+        headerBackground.setAlpha(MAX_ALPHA - scaled);
+        profile.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+        svChats.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+        pix.setTextColor(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
     }
 }
