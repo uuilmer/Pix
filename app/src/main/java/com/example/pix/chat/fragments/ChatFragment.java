@@ -150,11 +150,24 @@ public class ChatFragment extends Fragment {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
-        ivProfile.setOnClickListener(view12 -> getParentFragmentManager()
-                .beginTransaction()
-                .addToBackStack("stack")
-                .replace(R.id.friend_container, new ProfileFragment(friend))
-                .commit());
+        Fragment friendProfile = new ProfileFragment(friend);
+        ivProfile.setOnClickListener(view12 -> {
+            // If we have already made a ProfileFragment for this friend, show it and hide the Chat
+            if (getParentFragmentManager().getFragments().contains(friendProfile)) {
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .show(friendProfile)
+                        .hide(this)
+                        .commit();
+                return;
+            }
+            // If not, add it, then show it and hide the Chat
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.friend_container, friendProfile)
+                    .hide(this)
+                    .commit();
+        });
 
         tvName.setText("" + friend.getUsername());
 

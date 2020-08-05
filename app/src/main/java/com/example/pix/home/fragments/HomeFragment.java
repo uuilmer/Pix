@@ -77,11 +77,22 @@ public class HomeFragment extends Fragment {
 
         // When we click on the edit profile Toolbar button, replace this screen with a ProfileFragment
         profile.setOnClickListener(unusedView -> {
-            getActivity()
-                    .getSupportFragmentManager()
+            // If we have previously created a ProfileFragment, get it..
+            if (getParentFragmentManager().getFragments().contains(profileFragment)) {
+                getParentFragmentManager()
+                        .beginTransaction()
+                        // ..show it..
+                        .show(profileFragment)
+                        // ..and hide this HomeFragment
+                        .hide(this)
+                        .commit();
+                return;
+            }
+            // If we haven't, add it
+            getParentFragmentManager()
                     .beginTransaction()
-                    .addToBackStack(null)
-                    .replace(R.id.home_profile, profileFragment)
+                    .add(R.id.home_profile, profileFragment)
+                    .hide(this)
                     .commit();
         });
 

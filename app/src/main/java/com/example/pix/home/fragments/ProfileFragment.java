@@ -35,6 +35,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.chat.activities.FriendActivity.FRIEND_FRAGMENT_TAG;
+import static com.example.pix.home.activities.HomeActivity.HOME_FRAGMENT_TAG;
 import static com.example.pix.home.activities.HomeActivity.RESULT_LOAD_IMG;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
@@ -74,7 +76,24 @@ public class ProfileFragment extends Fragment {
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
         setExitTransition(new Explode());
-        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> getActivity().onBackPressed());
+        (view.findViewById(R.id.profile_back)).setOnClickListener(unusedView -> {
+            // If the User was looking at a friend's profile, there must have been a ChatFragment with the FRIEND_FRAGMENT_CHAT
+            if (!isOwner) {
+                Fragment friendFragment = getParentFragmentManager().findFragmentByTag(FRIEND_FRAGMENT_TAG);
+                getParentFragmentManager().beginTransaction()
+                        .show(friendFragment)
+                        .hide(this)
+                        .commit();
+                return;
+            }
+            // If it was not a friend's profile, it must have been a User looking at their own profile,
+            // in which case there must be a Fragment with the HOME_FRAGMENT_TAG
+            Fragment home = getParentFragmentManager().findFragmentByTag(HOME_FRAGMENT_TAG);
+            getParentFragmentManager().beginTransaction()
+                    .hide(this)
+                    .show(home)
+                    .commit();
+        });
 
         profile = view.findViewById(R.id.profile_pic);
 
