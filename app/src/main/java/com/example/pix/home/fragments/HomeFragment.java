@@ -38,6 +38,11 @@ import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 public class HomeFragment extends Fragment {
 
     public static final int MAX_ALPHA = 255;
+    private Drawable headerBackground;
+    private ImageView profile;
+    private ImageView svChats;
+    private TextView pix;
+    private ViewPager viewPager;
 
     public HomeFragment() {
     }
@@ -48,16 +53,12 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    SpotifyAppRemote mSpotifyAppRemote;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
-
-        ImageView profile = view.findViewById(R.id.home_profile_icon);
-        TextView pix = view.findViewById(R.id.tv_score);
+        profile = view.findViewById(R.id.home_profile_icon);
+        pix = view.findViewById(R.id.tv_score);
 
         // Set the current Pix Score
         pix.setText("" + Like.getPix(ParseUser.getCurrentUser()));
@@ -99,7 +100,7 @@ public class HomeFragment extends Fragment {
         PagerTabStrip pagerTabStrip = view.findViewById(R.id.pager_header);
         pagerTabStrip.setDrawFullUnderline(false);
 
-        ImageView svChats = view.findViewById(R.id.home_search_user);
+        svChats = view.findViewById(R.id.home_search_user);
 
         // Create popup to search for friends
         svChats.setOnClickListener(unusedView -> {
@@ -117,11 +118,10 @@ public class HomeFragment extends Fragment {
         fragmentNames.add("Compose");
         colors.add(Color.GREEN);
 
-
-        ViewPager viewPager = view.findViewById(R.id.vpPager);
+        viewPager = view.findViewById(R.id.vpPager);
         // Link the colors to each page
         LinearLayout header = view.findViewById(R.id.header);
-        Drawable headerBackground = header.getBackground();
+        headerBackground = header.getBackground();
         headerBackground.setAlpha(0);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

@@ -113,19 +113,32 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     return;
                 }
 
-                // We need to unarchive this Chat if it was archived
-                chat.setVisible(true);
-                chat.saveInBackground(e -> {
-                    // Action after we unarchive
+                // Action after we unarchive
+                SaveCallback callback = e -> {
                     if (e != null) {
                         Toast.makeText(context, "Error unarchiving Chat", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    i.putExtra(CHAT, chat.getObjectId());
+                    i.putExtra("chat", chat.getObjectId());
                     context.startActivity(i);
-                });
+                };
+
+                // We need to unarchive this Chat if it was archived
+                if (chat.getParseUser(USER_ONE).getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                    if (!chat.getBoolean(VISIBLE_ONE)) {
+                        chat.put(VISIBLE_ONE, true);
+                        chat.saveInBackground(callback);
+                        return;
+                    }
+                } else {
+                    if (!chat.getBoolean(VISIBLE_TWO)) {
+                        chat.put(VISIBLE_TWO, true);
+                        chat.saveInBackground(callback);
+                        return;
+                    }
+                }
                 // Case where the Chat was already visible
-                i.putExtra(CHAT, chat.getObjectId());
+                i.putExtra("chat", chat.getObjectId());
                 context.startActivity(i);
             });
             ParseFile pic = user.getParseFile(USER_PROFILE_CODE);

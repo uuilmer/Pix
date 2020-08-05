@@ -36,8 +36,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private VideoView videoContainer;
     // This will keep track of Snaps we have already seen, to make it impossible to see a Snap twice
     private static HashSet<Message> snapsSeen = new HashSet<>();
-    // Commented out code is attempt to combine two consecutive messages by the same sender into one
-    //List<ViewHolder> viewHolders;
 
     public MessageAdapter(Context context, List<Message> messages, ImageView imageContainer, VideoView videoContainer) {
         this.context = context;

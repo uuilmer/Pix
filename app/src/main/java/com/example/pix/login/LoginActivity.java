@@ -3,6 +3,7 @@ package com.example.pix.login;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -90,6 +91,13 @@ public class LoginActivity extends AppCompatActivity {
         (findViewById(R.id.parse_login)).setOnClickListener(unusedView -> {
             String username = etUsername.getText().toString();
             String password = etPassword.getText().toString();
+
+            // Fields cannot be blank
+            if (username.length() == 0 || password.length() == 0) {
+                Toast.makeText(this, "No field can be blank!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             ParseUser.logInInBackground(username, password, new LogInCallback() {
                 @Override
                 public void done(ParseUser user, ParseException e) {
@@ -108,9 +116,18 @@ public class LoginActivity extends AppCompatActivity {
 
         // When user clicks register, we set up their account then go to MainActivity
         btnSignup.setOnClickListener(unusedView -> {
+            String username = etUsername.getText().toString();
+            String password = etPassword.getText().toString();
+
+            // Fields cannot be blank
+            if (username.length() == 0 || password.length() == 0) {
+                Toast.makeText(this, "No field can be blank!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             ParseUser newUser = new ParseUser();
-            newUser.setUsername(etUsername.getText().toString());
-            newUser.setPassword(etPassword.getText().toString());
+            newUser.setUsername(username);
+            newUser.setPassword(password);
             try {
                 newUser.signUp();
                 Toast.makeText(LoginActivity.this, "Successfully signed up!", Toast.LENGTH_SHORT).show();
@@ -124,6 +141,16 @@ public class LoginActivity extends AppCompatActivity {
 
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
         btnSpotify.setOnClickListener(unusedView -> {
+
+            // If the USer doesn't have Spotify installed, launch the download page on the Play Store
+            if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(
+                        "https://play.google.com/store/apps/details?id=com.spotify.music"));
+                intent.setPackage("com.android.vending");
+                startActivity(intent);
+                return;
+            }
 
             // Set the connection parameters
             ConnectionParams connectionParams =
@@ -146,7 +173,13 @@ public class LoginActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(Throwable throwable) {
-                            Log.e("MainActivity", throwable.getMessage(), throwable);
+                            // If we failed to connect to Spotify, chances are the User hasn't signed in yet
+                            Toast.makeText(LoginActivity.this, "Sign in with Spotify", Toast.LENGTH_SHORT).show();
+
+                            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.spotify.music");
+                            if (launchIntent != null) {
+                                startActivity(launchIntent);//null pointer check in case package name was not found
+                            }
                         }
                     });
             authenticated = true;
