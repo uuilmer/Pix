@@ -15,7 +15,6 @@ import java.util.List;
 public class Like extends ParseObject {
 
     public static final String STREAMER_CODE = "streamer";
-    public static final String LISTENER_CODE = "listener";
 
     public ParseUser getListener() {
         return getParseUser("listener");

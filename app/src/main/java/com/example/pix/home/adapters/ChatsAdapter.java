@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -117,7 +118,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis,
                         System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
             } catch (java.text.ParseException e) {
-                e.printStackTrace();
+                Toast.makeText(context, "Error reformatting dates", Toast.LENGTH_SHORT).show();
+                return json_response;
             }
 
             return relativeDate;
