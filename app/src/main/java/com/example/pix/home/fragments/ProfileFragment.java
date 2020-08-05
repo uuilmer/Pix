@@ -121,7 +121,7 @@ public class ProfileFragment extends Fragment {
 
             // If we press "Enter" in the username EditText, update the username
             EditText name = view.findViewById(R.id.profile_name);
-            name.setText("" + user.getUsername());
+            name.setText(user.getUsername());
 
             (view.findViewById(R.id.profile_signout)).setOnClickListener(unusedView -> {
                 ParseUser.logOut();
@@ -155,18 +155,16 @@ public class ProfileFragment extends Fragment {
         } else {
             // The friend's name is a TextView, so that the user cannot edit it
             TextView name = view.findViewById(R.id.profile_name);
-            name.setText("" + user.getUsername());// If we press "Enter" in the username EditText, update the username
+            name.setText(user.getUsername());// If we press "Enter" in the username EditText, update the username
         }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        pix.setText("" + Like.getPix(user));
-
         // Check every 2 seconds for how many "Pix"(Likes) this person has
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                getActivity().runOnUiThread(() -> pix.setText("" + Like.getPix(user)));
+                getActivity().runOnUiThread(() -> pix.setText(Like.getPix(user) + "P"));
             }
         }, 0, 2000);
 

@@ -169,7 +169,7 @@ public class ChatFragment extends Fragment {
                     .commit();
         });
 
-        tvName.setText("" + friend.getUsername());
+        tvName.setText(friend.getUsername());
 
         manager = new LinearLayoutManager(getContext());
 

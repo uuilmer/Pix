@@ -85,7 +85,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
 
         public void bind(ParseUser user) {
-            this.tvPix.setText("" + user.getInt("pix") + "P");
+            this.tvPix.setText(user.getInt("pix") + "P");
             this.llSelect.setOnClickListener(view -> {
                 // If we select a result, we will want to go to ChatActivity
                 Intent i = new Intent(context, FriendActivity.class);
@@ -149,7 +149,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         .circleCrop()
                         .into(this.ivProfile);
             }
-            this.tvName.setText("" + user.getUsername());
+            this.tvName.setText(user.getUsername());
             this.tvStatus.setVisibility(View.GONE);
             this.tvTime.setVisibility(View.GONE);
         }

@@ -43,6 +43,14 @@
         android:text="23"
         android:textSize="17dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Listen to Stream"
+        android:textSize="18dp" />
+
     <FrameLayout
         android:id="@+id/profile_musicroom"
         android:layout_width="match_parent"

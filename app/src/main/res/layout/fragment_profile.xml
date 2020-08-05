@@ -83,6 +83,14 @@
             android:src="@drawable/right_icon" />
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Stream Spotify"
+        android:textSize="18dp" />
+
     <FrameLayout
         android:id="@+id/profile_musicroom"
         android:layout_width="match_parent"

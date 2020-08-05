@@ -79,7 +79,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         }
 
         public void bind(Chat chat) {
-            this.tvPix.setText("" + chat.getPix() + "P");
+            this.tvPix.setText(chat.getPix() + "P");
             this.llSelect.setOnClickListener(unusedView -> {
                 Intent i = new Intent(context, FriendActivity.class);
                 i.putExtra(CHAT, chat.getObjectId());
@@ -95,11 +95,11 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                             .circleCrop()
                             .into(this.ivProfile);
                 }
-                this.tvName.setText("" + friend.getUsername());
-                this.tvStatus.setText("" + chat.getStatusText());
+                this.tvName.setText(friend.getUsername());
+                this.tvStatus.setText(chat.getStatusText());
                 Message recent = chat.getFirstMessage();
-                this.tvTime.setText("" + (recent != null ? getRelativeTime(recent.getTime().toString()) : ""));
-                tvPix.setText("" + Like.getPix(friend) + "P");
+                this.tvTime.setText((recent != null ? getRelativeTime(recent.getTime().toString()) : ""));
+                tvPix.setText(Like.getPix(friend) + "P");
             } catch (ParseException e) {
                 Log.e("Error", "Failed getting status text and/or time", e);
             }
