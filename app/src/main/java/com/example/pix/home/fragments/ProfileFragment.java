@@ -181,16 +181,27 @@ public class ProfileFragment extends Fragment {
                 final Uri imageUri = data.getData();
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
-
+                // Assign it to the User
                 ParseUser.getCurrentUser().put(USER_PROFILE_CODE, toSave);
-                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
+
+                // Save the new profile pic in Parse
+                toSave.saveInBackground((SaveCallback) e -> {
+                    if (e != null) {
+                        Toast.makeText(getContext(), "Unable to save Pic", Toast.LENGTH_SHORT).show();
+                        System.out.println(e.getMessage());
+                        return;
+                    }
+                    // Save the User to keep his assigned image
+                    ParseUser.getCurrentUser().saveInBackground(e1 -> {
+                        if (e1 != null) {
+                            Toast.makeText(getContext(), "Unable to set Profile Pic", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         Glide.with(getContext())
                                 .load(toSave.getUrl())
                                 .circleCrop()
                                 .into(profile);
-                    }
+                    });
                 });
             }
         }
