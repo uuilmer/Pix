@@ -25,6 +25,7 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
@@ -33,6 +34,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private List<Message> messages;
     private ImageView imageContainer;
     private VideoView videoContainer;
+    // This will keep track of Snaps we have already seen, to make it impossible to see a Snap twice
+    private static HashSet<Message> snapsSeen = new HashSet<>();
     // Commented out code is attempt to combine two consecutive messages by the same sender into one
     //List<ViewHolder> viewHolders;
 
@@ -84,6 +87,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         public void bind(int position, List<Message> messages, Context context, ImageView imageContainer, VideoView videoContainer) {
             this.contentPic.setVisibility(View.GONE);
             this.name.setVisibility(View.VISIBLE);
+            this.openSnap.setVisibility(View.GONE);
 
             Message message = messages.get(position);
 
@@ -134,7 +138,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
 
             // If this is a Snap content...
-            if (message.isSnap()) {
+            if (message.isSnap() && !snapsSeen.contains(message)) {
                 // Show the snap layout(To represent a message)
                 this.openSnap.setVisibility(View.VISIBLE);
 
@@ -167,6 +171,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
                             // Delete Snap
                             message.deleteInBackground();
+                            snapsSeen.add(message);
                             this.snapText.setText("Opened");
 
                             // No more interaction with this empty Snap
