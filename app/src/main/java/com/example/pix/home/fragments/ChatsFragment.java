@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -53,6 +54,7 @@ public class ChatsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        TextView tvScore = view.findViewById(R.id.tv_score);
         RecyclerView rvChats = view.findViewById(R.id.rv_chats);
 
         // Get a List of this User's Chats and create an Adapter for it
@@ -100,9 +102,11 @@ public class ChatsFragment extends Fragment {
                             toRemove.add(c.getObjectId());
                         }
                         // Delete them
-                        for (Chat c : chats) {
-                            if (toRemove.contains(c.getObjectId())) {
-                                chats.remove(c);
+                        // The short-hand for-loop gave concurrent complications at times
+                        for (int i = 0; i < chats.size(); i++){
+                            if (toRemove.contains(chats.get(i).getObjectId())) {
+                                chats.remove(i);
+                                i--;
                             }
                         }
                         // Add the to the top/add new chats

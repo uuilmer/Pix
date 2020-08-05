@@ -28,7 +28,7 @@ public class FriendActivity extends AppCompatActivity {
         // Check if we took a picture from HomeFragment's ComposeFragment
         // Set a tag for this Fragment so we can retrieve it if we go to this friend's ProfileFragment
         if (getIntent().hasExtra(NEW_PIC_CODE)) {
-            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image), FRIEND_FRAGMENT_TAG).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.contentToSave), FRIEND_FRAGMENT_TAG).commit();
         } else {
             getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(), FRIEND_FRAGMENT_TAG).commit();
         }
