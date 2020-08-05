@@ -11,9 +11,6 @@ import java.util.Date;
 @ParseClassName("Message")
 public class Message extends ParseObject {
 
-    public Message() {
-    }
-
     public Chat getChat() {
         return (Chat) getParseObject("chat");
     }

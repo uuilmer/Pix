@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -54,7 +53,6 @@ public class ChatsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView tvScore = view.findViewById(R.id.tv_score);
         RecyclerView rvChats = view.findViewById(R.id.rv_chats);
 
         // Get a List of this User's Chats and create an Adapter for it
@@ -88,7 +86,11 @@ public class ChatsFragment extends Fragment {
             // Whenever we try to refresh, delete all Chats, and get them again
             layout.setRefreshStyle(PullRefreshLayout.STYLE_WATER_DROP);
 
-            lowerLimit = chats.get(0).getUpdatedAt();
+            if (chats.size() == 0) {
+                lowerLimit = null;
+            } else {
+                lowerLimit = chats.get(0).getUpdatedAt();
+            }
             layout.setOnRefreshListener(() -> {
                 try {
                     Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
@@ -110,7 +112,11 @@ public class ChatsFragment extends Fragment {
                         chatsAdapter.notifyDataSetChanged();
                         layout.setRefreshing(false);
                         // Our newest message is now newer
-                        lowerLimit = chats.get(0).getUpdatedAt();
+                        if (chats.size() == 0) {
+                            lowerLimit = null;
+                        } else {
+                            lowerLimit = chats.get(0).getUpdatedAt();
+                        }
                     }, lowerLimit);
                 } catch (ParseException e) {
                     e.printStackTrace();

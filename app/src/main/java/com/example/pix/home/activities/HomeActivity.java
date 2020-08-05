@@ -12,9 +12,9 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 public class HomeActivity extends AppCompatActivity {
 
-    public SpotifyAppRemote mSpotifyAppRemote;
     public static final int RESULT_LOAD_IMG = 100;
     public static HomeFragment homeFragment;
+    public static final String HOME_FRAGMENT_TAG = "home";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class HomeActivity extends AppCompatActivity {
         homeFragment = new HomeFragment();
 
         // The home activity first contains the HomeFragment, which can potentially replace itself with a ProfileFragment
-        getSupportFragmentManager().beginTransaction().replace(R.id.home_profile, homeFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.home_profile, homeFragment, HOME_FRAGMENT_TAG).commit();
     }
 
     @Override

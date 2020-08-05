@@ -17,6 +17,8 @@ import static com.example.pix.home.adapters.SearchAdapter.NEW_PIC_CODE;
 
 public class FriendActivity extends AppCompatActivity {
 
+    public static final String FRIEND_FRAGMENT_TAG = "friend";
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,10 +26,11 @@ public class FriendActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friend);
 
         // Check if we took a picture from HomeFragment's ComposeFragment
+        // Set a tag for this Fragment so we can retrieve it if we go to this friend's ProfileFragment
         if (getIntent().hasExtra(NEW_PIC_CODE)) {
-            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image)).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(ComposeFragment.image), FRIEND_FRAGMENT_TAG).commit();
         } else {
-            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment()).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.friend_container, new ChatFragment(), FRIEND_FRAGMENT_TAG).commit();
         }
     }
 

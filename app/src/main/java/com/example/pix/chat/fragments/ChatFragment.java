@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.transition.Explode;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -100,11 +101,17 @@ public class ChatFragment extends Fragment {
         ivPictures = view.findViewById(R.id.chat_pictures);
         ivNewPic = view.findViewById(R.id.chat_image);
 
+        ComposeFragment composeFragment = new ComposeFragment();
+        composeFragment.setSharedElementEnterTransition(new Explode());
+        composeFragment.setEnterTransition(new Explode());
+        setExitTransition(new Explode());
+        composeFragment.setSharedElementReturnTransition(new Explode());
+
         // If we click the camera, go to the ComposeFragment
         ivCamera.setOnClickListener(unusedView -> {
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.friend_container, new ComposeFragment())
+                    .replace(R.id.friend_container, composeFragment)
                     .commit();
         });
 
@@ -143,13 +150,26 @@ public class ChatFragment extends Fragment {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }
 
-        ivProfile.setOnClickListener(unusedView -> getParentFragmentManager()
-                .beginTransaction()
-                .addToBackStack("stack")
-                .replace(R.id.friend_container, new ProfileFragment(friend))
-                .commit());
+        Fragment friendProfile = new ProfileFragment(friend);
+        ivProfile.setOnClickListener(unusedView -> {
+            // If we have already made a ProfileFragment for this friend, show it and hide the Chat
+            if (getParentFragmentManager().getFragments().contains(friendProfile)) {
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .show(friendProfile)
+                        .hide(this)
+                        .commit();
+                return;
+            }
+            // If not, add it, then show it and hide the Chat
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.friend_container, friendProfile)
+                    .hide(this)
+                    .commit();
+        });
 
-        tvName.setText("" + friend.getUsername());
+        tvName.setText(friend.getUsername());
 
         manager = new LinearLayoutManager(getContext());
 
@@ -208,7 +228,11 @@ public class ChatFragment extends Fragment {
             });
 
             // Record the last message we received's time
-            lastMessage = messages.get(0).getTime();
+            if (messages.size() == 0) {
+                lastMessage = null;
+            } else {
+                lastMessage = messages.get(0).getTime();
+            }
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -234,7 +258,11 @@ public class ChatFragment extends Fragment {
 
                         // Alert our RecyclerView and Adapter
                         messageAdapter.notifyDataSetChanged();
-                        lastMessage = messages.get(0).getTime();
+                        if (messages.size() == 0) {
+                            lastMessage = null;
+                        } else {
+                            lastMessage = messages.get(0).getTime();
+                        }
                         manager.scrollToPosition(0);
                     });
                 }

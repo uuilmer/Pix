@@ -130,6 +130,9 @@ public class ComposeFragment extends Fragment {
             to have a reference to Camera which was invalidated the moment we opened it in ChatFragment. To fix this
             we need to re-setup the Camera whenever a ComposeFragment is resumed. */
         setup();
+
+        // If we came back to a Compose Fragment and the Popup is active, close it
+        if (PopupHelper.isActive()) PopupHelper.closePopup();
     }
 
     private boolean checkCameraHardware(Context context) {
