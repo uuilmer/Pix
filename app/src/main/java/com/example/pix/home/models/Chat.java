@@ -1,13 +1,19 @@
 package com.example.pix.home.models;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,10 +56,13 @@ public class Chat extends ParseObject {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo(USER_ONE, user);
+        // Make sure this User has not archived this Chat
+        q.whereEqualTo(VISIBLE_ONE, true);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo(USER_TWO, user);
+        p.whereEqualTo(VISIBLE_TWO, true);
         queries.add(p);
 
         // Combine the queries as an OR
@@ -70,10 +79,13 @@ public class Chat extends ParseObject {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo(USER_ONE, user);
+        // Make sure this User has not archived this Chat
+        q.whereEqualTo(VISIBLE_ONE, true);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo(USER_TWO, user);
+        p.whereEqualTo(VISIBLE_TWO, true);
         queries.add(p);
 
         // Combine the queries as an OR
@@ -90,10 +102,12 @@ public class Chat extends ParseObject {
         List<ParseQuery<Chat>> queries = new ArrayList<>();
         ParseQuery<Chat> q = ParseQuery.getQuery(Chat.class);
         q.whereEqualTo(USER_ONE, user);
+        q.whereEqualTo(VISIBLE_ONE, true);
         queries.add(q);
 
         ParseQuery<Chat> p = ParseQuery.getQuery(Chat.class);
         p.whereEqualTo(USER_TWO, user);
+        p.whereEqualTo(VISIBLE_TWO, true);
         queries.add(p);
 
         // Combine the queries as an OR
@@ -102,8 +116,52 @@ public class Chat extends ParseObject {
         res.orderByDescending(UPDATED_AT);
         res.setLimit(NUM_PER_PAGE * page + NUM_PER_PAGE);
         res.setSkip(NUM_PER_PAGE * page);
-        res.whereGreaterThan(UPDATED_AT, lowerLimit);
+        if (lowerLimit != null) {
+            res.whereGreaterThan(UPDATED_AT, lowerLimit);
+        }
         res.findInBackground(handler);
+    }
+
+    // Get a List of Messages from this Chat then delete each one of them
+    public static void deleteMessages(Chat chat) throws ParseException {
+        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+        q.include(CHAT);
+        q.whereEqualTo(CHAT, chat);
+        List<Message> res = q.find();
+        for (Message m : res) {
+            m.delete();
+        }
+    }
+
+    public static void archiveChat(Context context, Chat chat) {
+        // Our Use doesn't want to see this Chat anymore
+        chat.setVisible(false);
+        try {
+            chat.save();
+            // If the friend also doesn't want to see it, delete the Chat history
+            if (!chat.isVisible(chat.getFriend(ParseUser.getCurrentUser()))) {
+                try {
+                    // First delete the messages
+                    deleteMessages(chat);
+                    // Then the Chat itself
+                    chat.deleteInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(context, "Error deleting chat", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Toast.makeText(context, "Chat was deleted", Toast.LENGTH_SHORT).show();
+                    });
+                } catch (ParseException e) {
+                    Toast.makeText(context, "Error deleting messages", Toast.LENGTH_SHORT).show();
+
+                    e.printStackTrace();
+                }
+            }
+        } catch (ParseException e) {
+            Toast.makeText(context, "Error updating chat", Toast.LENGTH_SHORT).show();
+
+            e.printStackTrace();
+        }
     }
 
     public int getStatus() {
@@ -151,6 +209,23 @@ public class Chat extends ParseObject {
 
     public void setPix(int pix) {
         put(USER_PIX, pix);
+    }
+
+    public boolean isVisible(ParseUser user) {
+        ParseUser userOne = getParseUser(USER_ONE);
+        if (userOne.getObjectId().equals(user.getObjectId())) {
+            return getBoolean(VISIBLE_ONE);
+        }
+        return getBoolean(VISIBLE_TWO);
+    }
+
+    public void setVisible(boolean isVisible) {
+        ParseUser userOne = getParseUser(USER_ONE);
+        if (userOne.getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+            put(VISIBLE_ONE, isVisible);
+            return;
+        }
+        put(VISIBLE_TWO, isVisible);
     }
 
     // This method is for the purposes of a chat preview (Doesn't edit read receipts)
