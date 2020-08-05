@@ -252,6 +252,9 @@ public class MusicRoomFragment extends Fragment {
             if (isOwner) {
                 // Check if the song is playing
                 subscription = remote.getPlayerApi().subscribeToPlayerState();
+
+                // Play music on Spotify in case no Song was playing
+                remote.getPlayerApi().resume();
                 subscription.setEventCallback(playerState -> {
                     // Check if the Song changed, in which case we update it in Parse
                     if (!playerState.track.uri.equals(nowPlayingInParse.getURI())) {
@@ -338,6 +341,8 @@ public class MusicRoomFragment extends Fragment {
         }
         // If we were streaming as the owner, stop
         if (isOwner) {
+            // Stop the Song in case in wasn't already paused
+            remote.getPlayerApi().pause();
             subscription.cancel();
             subscription = null;
             try {
