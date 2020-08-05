@@ -64,7 +64,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         return messages.size();
     }
 
-    protected static class ViewHolder extends RecyclerView.ViewHolder {
+    protected class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView name;
         private TextView text;
@@ -73,6 +73,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         private LinearLayout openSnap;
         private View snapIndicator;
         private TextView snapText;
+        public static final String MP4_SUFFIX = ".mp4";
+        private ParseFile content;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -89,7 +91,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.name.setVisibility(View.VISIBLE);
             this.openSnap.setVisibility(View.GONE);
 
-            Message message = messages.get(position);
+            message = messages.get(position);
 
             // Check if the previous message was sent by the same person, if so there is no need to display the username again
             if (position < messages.size() - 1) {
@@ -100,7 +102,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             ParseUser from = message.getFrom();
             try {
-                this.name.setText("" + (from.fetchIfNeeded().getObjectId().equals(ParseUser.getCurrentUser().getObjectId()) ? "Me" : from.fetchIfNeeded().getUsername()));
+                this.name.setText((from.fetchIfNeeded().getObjectId().equals(ParseUser.getCurrentUser().getObjectId()) ? "Me" : from.fetchIfNeeded().getUsername()));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -109,11 +111,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.text.setVisibility(View.GONE);
             if (message.getText() != null && !message.getText().equals("") && !message.isSnap()) {
                 this.text.setVisibility(View.VISIBLE);
-                this.text.setText("" + message.getText());
+                this.text.setText(message.getText());
             }
 
 
-            ParseFile content = message.getPic();
+            content = message.getPic();
             // Only show content attachment if not a Snap content
             if (content != null && !message.isSnap()) {
                 this.contentPic.setVisibility(View.VISIBLE);
@@ -139,78 +141,80 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             // If this is a Snap content...
             if (message.isSnap() && !snapsSeen.contains(message)) {
-                // Show the snap layout(To represent a message)
-                this.openSnap.setVisibility(View.VISIBLE);
-
-                // If this User sent it, they can't open the Snap
-                if (message.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
-                    this.snapText.setText("Delivered");
-                } else {
-                    // If this User received the Snap content, if they click the layout...
-                    this.openSnap.setOnClickListener(unusedView -> {
-                        // Set up the content as an ImageView or VideoView that lives in ChatFragment
-                        // Both of these are placed above Chat with a friend with visibility Gone,
-                        // so we change it to visible and it will cover the screen
-
-                        // This happens if we click the full screen content(For both pic and video)...
-                        View.OnClickListener callback = unusedView1 -> {
-                            // Get rid of the Snap image and hide the big ImageView
-                            imageContainer.setImageResource(0);
-                            imageContainer.setVisibility(View.GONE);
-
-                            // Get rid of the SNap video and hide the big VideoView
-                            videoContainer.suspend();
-                            videoContainer.setVisibility(View.GONE);
-
-
-                            Drawable buttonDrawable = this.snapIndicator.getBackground();
-                            buttonDrawable = DrawableCompat.wrap(buttonDrawable);
-                            // Indicate to User that we have opened the Snap by changing indicator color
-                            DrawableCompat.setTint(buttonDrawable, Color.WHITE);
-                            this.snapIndicator.setBackground(buttonDrawable);
-
-                            // Delete Snap
-                            message.deleteInBackground();
-                            snapsSeen.add(message);
-                            this.snapText.setText("Opened");
-
-                            // No more interaction with this empty Snap
-                            imageContainer.setOnClickListener(null);
-                            videoContainer.setOnClickListener(null);
-                            this.openSnap.setOnClickListener(null);
-                        };
-
-                        // If the url ends with mp4, then this must be a video snap
-                        if (content.getUrl().endsWith(".mp4")) {
-                            // Show the big VideView
-                            videoContainer.setVisibility(View.VISIBLE);
-
-                            // Show the big ImageView(This was done to serve as a background,
-                            // as attempting to cahnge the background of the VideoView was very complex)
-                            imageContainer.setVisibility(View.VISIBLE);
-
-                            // Set up the looping Snap video
-                            Uri video = Uri.parse(content.getUrl());
-                            videoContainer.setVideoURI(video);
-                            videoContainer.setOnPreparedListener(mp -> {
-                                mp.setLooping(true);
-                                videoContainer.start();
-                            });
-
-                            // When we click the video, end it
-                            videoContainer.setOnClickListener(callback);
-                        } else {
-                            // Case where Snap content is picture
-                            Glide.with(context).load(content.getUrl()).into(imageContainer);
-                            imageContainer.setVisibility(View.VISIBLE);
-
-                            imageContainer.setOnClickListener(callback);
-                        }
-                    });
-                }
+                setupSnap();
             }
+        }
 
-            this.message = message;
+        private void setupSnap() {
+            // Show the snap layout(To represent a message)
+            this.openSnap.setVisibility(View.VISIBLE);
+
+            // If this User sent it, they can't open the Snap
+            if (message.getFrom().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                this.snapText.setText("Delivered");
+            } else {
+                // If this User received the Snap content, if they click the layout...
+                this.openSnap.setOnClickListener(unusedView -> {
+                    // Set up the content as an ImageView or VideoView that lives in ChatFragment
+                    // Both of these are placed above Chat with a friend with visibility Gone,
+                    // so we change it to visible and it will cover the screen
+
+                    // This happens if we click the full screen content(For both pic and video)...
+                    View.OnClickListener callback = unusedView1 -> {
+                        // Get rid of the Snap image and hide the big ImageView
+                        imageContainer.setImageResource(0);
+                        imageContainer.setVisibility(View.GONE);
+
+                        // Get rid of the SNap video and hide the big VideoView
+                        videoContainer.suspend();
+                        videoContainer.setVisibility(View.GONE);
+
+
+                        Drawable buttonDrawable = this.snapIndicator.getBackground();
+                        buttonDrawable = DrawableCompat.wrap(buttonDrawable);
+                        // Indicate to User that we have opened the Snap by changing indicator color
+                        DrawableCompat.setTint(buttonDrawable, Color.WHITE);
+                        this.snapIndicator.setBackground(buttonDrawable);
+
+                        // Delete Snap
+                        message.deleteInBackground();
+                        snapsSeen.add(message);
+                        this.snapText.setText("Opened");
+
+                        // No more interaction with this empty Snap
+                        imageContainer.setOnClickListener(null);
+                        videoContainer.setOnClickListener(null);
+                        this.openSnap.setOnClickListener(null);
+                    };
+
+                    // If the url ends with mp4, then this must be a video snap
+                    if (content.getUrl().endsWith(MP4_SUFFIX)) {
+                        // Show the big VideView
+                        videoContainer.setVisibility(View.VISIBLE);
+
+                        // Show the big ImageView(This was done to serve as a background,
+                        // as attempting to cahnge the background of the VideoView was very complex)
+                        imageContainer.setVisibility(View.VISIBLE);
+
+                        // Set up the looping Snap video
+                        Uri video = Uri.parse(content.getUrl());
+                        videoContainer.setVideoURI(video);
+                        videoContainer.setOnPreparedListener(mp -> {
+                            mp.setLooping(true);
+                            videoContainer.start();
+                        });
+
+                        // When we click the video, end it
+                        videoContainer.setOnClickListener(callback);
+                    } else {
+                        // Case where Snap content is picture
+                        Glide.with(context).load(content.getUrl()).into(imageContainer);
+                        imageContainer.setVisibility(View.VISIBLE);
+
+                        imageContainer.setOnClickListener(callback);
+                    }
+                });
+            }
         }
     }
 }
