@@ -105,12 +105,14 @@ public class LoginActivity extends AppCompatActivity {
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
         (findViewById(R.id.auth_spotify)).setOnClickListener(unusedView -> {
 
+            // If the USer doesn't have Spotify installed, launch the download page on the Play Store
             if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(
                         "https://play.google.com/store/apps/details?id=com.spotify.music"));
                 intent.setPackage("com.android.vending");
                 startActivity(intent);
+                return;
             }
 
             // Set the connection parameters

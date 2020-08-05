@@ -93,12 +93,6 @@ public class HomeFragment extends Fragment {
         LinearLayout header = view.findViewById(R.id.header);
         headerBackground = header.getBackground();
         headerBackground.setAlpha(0);
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                System.out.println("header" + headerBackground.getAlpha());
-            }
-        }, 0, 500);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
