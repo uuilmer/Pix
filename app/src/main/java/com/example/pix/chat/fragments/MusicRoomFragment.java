@@ -253,6 +253,7 @@ public class MusicRoomFragment extends Fragment {
                 // Check if the song is playing
                 subscription = remote.getPlayerApi().subscribeToPlayerState();
 
+                Toast.makeText(getContext(), "You can now play music in the Spotify App!", Toast.LENGTH_SHORT).show();
                 // Play music on Spotify in case no Song was playing
                 remote.getPlayerApi().resume();
                 subscription.setEventCallback(playerState -> {
@@ -338,6 +339,7 @@ public class MusicRoomFragment extends Fragment {
         if (listenerTimer != null) {
             listenerTimer.cancel();
             listenerTimer = null;
+            Toast.makeText(getContext(), "Listening Stopped", Toast.LENGTH_SHORT).show();
         }
         // If we were streaming as the owner, stop
         if (isOwner) {
@@ -351,6 +353,7 @@ public class MusicRoomFragment extends Fragment {
                 // Delete the reference to the Song that was playing from the MusicRoom
                 musicRoom.remove(NOW_PLAYING);
                 musicRoom.save();
+                Toast.makeText(getContext(), "Streaming Stopped", Toast.LENGTH_SHORT).show();
             } catch (ParseException e) {
                 e.printStackTrace();
                 Toast.makeText(getContext(), "Error deleting Sync Connection", Toast.LENGTH_SHORT).show();
