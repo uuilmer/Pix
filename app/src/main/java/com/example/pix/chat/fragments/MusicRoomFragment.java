@@ -358,10 +358,4 @@ public class MusicRoomFragment extends Fragment {
 
         ivPlay.setImageResource(R.drawable.musicroom_play);
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopStream();
-    }
 }
