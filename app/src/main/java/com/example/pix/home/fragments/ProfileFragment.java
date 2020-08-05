@@ -98,12 +98,14 @@ public class ProfileFragment extends Fragment {
 
         profile = view.findViewById(R.id.profile_pic);
 
+        ParseFile profilePic = user.getParseFile(USER_PROFILE_CODE);
         // Load profile pic
-        Glide.with(getContext())
-                .load(user
-                        .getParseFile(USER_PROFILE_CODE).getUrl())
-                .circleCrop()
-                .into(profile);
+        if (profilePic != null) {
+            Glide.with(getContext())
+                    .load(profilePic.getUrl())
+                    .circleCrop()
+                    .into(profile);
+        }
 
         // We need to differentiate if this ProfileFragment is a friend or the user
         // because we use a different xml layout for each case.
@@ -182,16 +184,23 @@ public class ProfileFragment extends Fragment {
                 final Uri imageUri = data.getData();
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
-
                 ParseUser.getCurrentUser().put(USER_PROFILE_CODE, toSave);
-                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
+                toSave.saveInBackground((SaveCallback) e -> {
+                    if (e != null) {
+                        Toast.makeText(getContext(), "Unable to save Pic", Toast.LENGTH_SHORT).show();
+                        System.out.println(e.getMessage());
+                        return;
+                    }
+                    ParseUser.getCurrentUser().saveInBackground(e1 -> {
+                        if (e1 != null) {
+                            Toast.makeText(getContext(), "Unable to set Profile Pic", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         Glide.with(getContext())
                                 .load(toSave.getUrl())
                                 .circleCrop()
                                 .into(profile);
-                    }
+                    });
                 });
             }
         }

@@ -1,8 +1,12 @@
 package com.example.pix.login;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +28,7 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 public class LoginActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 1337;
+    private static final int RECORD_VIDEO = 1000;
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
     private boolean loggedIn = false;
     private boolean authenticated = false;
@@ -37,9 +42,15 @@ public class LoginActivity extends AppCompatActivity {
     // When one of (spotify, parse) is done, check if both are done
     private void checkIfDone() {
         if (loggedIn && authenticated) {
-            Intent i = new Intent(LoginActivity.this, HomeActivity.class);
-            startActivity(i);
-            finish();
+            // If we are missing a permission, request it
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA}, RECORD_VIDEO);
+            } else {
+                Intent i = new Intent(LoginActivity.this, HomeActivity.class);
+                startActivity(i);
+                finish();
+            }
         }
     }
 
@@ -98,19 +109,16 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            ParseUser.logInInBackground(username, password, new LogInCallback() {
-                @Override
-                public void done(ParseUser user, ParseException e) {
-                    if (e != null) {
-                        Toast.makeText(LoginActivity.this, "Incorrect credentials", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Toast.makeText(LoginActivity.this, "Successfully logged in!", Toast.LENGTH_SHORT).show();
-                    loggedIn = true;
-                    (findViewById(R.id.parse_container)).setVisibility(View.GONE);
-                    checkIfDone();
-                    btnSpotify.requestFocus();
+            ParseUser.logInInBackground(username, password, (user, e) -> {
+                if (e != null) {
+                    Toast.makeText(LoginActivity.this, "Incorrect credentials", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                Toast.makeText(LoginActivity.this, "Successfully logged in!", Toast.LENGTH_SHORT).show();
+                loggedIn = true;
+                (findViewById(R.id.parse_container)).setVisibility(View.GONE);
+                checkIfDone();
+                btnSpotify.requestFocus();
             });
         });
 
@@ -142,7 +150,7 @@ public class LoginActivity extends AppCompatActivity {
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
         btnSpotify.setOnClickListener(unusedView -> {
 
-            // If the USer doesn't have Spotify installed, launch the download page on the Play Store
+            // If the User doesn't have Spotify installed, launch the download page on the Play Store
             if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(
@@ -168,6 +176,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             // We are done Authenticating Spotify
                             (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+                            authenticated = true;
                             checkIfDone();
                         }
 
@@ -182,8 +191,32 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         }
                     });
-            authenticated = true;
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Make sure we have been granted all permissions
+        if (requestCode == RECORD_VIDEO) {
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(this, "You need to enable Camera and Audio Permission", Toast.LENGTH_SHORT).show();
+
+                    ParseUser.logOut();
+                    (findViewById(R.id.parse_container)).setVisibility(View.VISIBLE);
+                    loggedIn = false;
+
+                    SpotifyAppRemote.disconnect(mSpotifyAppRemote);
+                    mSpotifyAppRemote = null;
+                    (findViewById(R.id.auth_spotify)).setVisibility(View.VISIBLE);
+                    authenticated = false;
+                    return;
+                }
+            }
+            checkIfDone();
+        }
     }
 
 }

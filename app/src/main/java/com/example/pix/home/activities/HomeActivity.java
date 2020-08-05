@@ -36,6 +36,7 @@ public class HomeActivity extends AppCompatActivity {
     public static final String KEY_TEXT_REPLY = "key_text_reply";
     public static final int REPLY_CODE = 001;
     private Message currentLatestMessage;
+    private Timer newMessages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +54,12 @@ public class HomeActivity extends AppCompatActivity {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Keep checking for new messages in the background, even when we close the app
-        new Timer().schedule(new TimerTask() {
+        newMessages = new Timer();
+        newMessages.schedule(new TimerTask() {
             @Override
             public void run() {
                 Message latestMessage = Message.getNewestMessage();
-                if (!latestMessage.getObjectId().equals(currentLatestMessage.getObjectId())) {
+                if (latestMessage != null && (currentLatestMessage == null || !latestMessage.getObjectId().equals(currentLatestMessage.getObjectId()))) {
                     NotificationCompat.Builder builder = null;
                     try {
                         // If we click on the notification, retrieve this message's Chat and bring it to the FriendActivity
@@ -122,5 +124,11 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        newMessages.cancel();
     }
 }

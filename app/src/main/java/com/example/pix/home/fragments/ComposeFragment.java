@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,7 +27,6 @@ import android.widget.Toast;
 
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
-import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.utils.CameraPreview;
 import com.example.pix.home.utils.PopupHelper;
@@ -36,13 +34,11 @@ import com.parse.ParseFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ComposeFragment extends Fragment {
 
-    private static final int RECORD_AUDIO = 1000;
     private static final int MAX_CLICK_DURATION = 200;
     public static ParseFile contentToSave;
     private int currCamera;
@@ -75,11 +71,7 @@ public class ComposeFragment extends Fragment {
         frameLayout = view.findViewById(R.id.compose_camera);
         take = view.findViewById(R.id.compose_take);
 
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
-        } else {
-            setup();
-        }
+        setup();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -233,15 +225,5 @@ public class ComposeFragment extends Fragment {
 
     private boolean checkCameraHardware(Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == RECORD_AUDIO) {
-            setup();
-        }
     }
 }
