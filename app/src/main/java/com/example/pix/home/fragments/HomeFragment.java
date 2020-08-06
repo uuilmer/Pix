@@ -19,7 +19,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.models.Like;
 import com.example.pix.home.utils.PopupHelper;
@@ -30,8 +29,6 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 

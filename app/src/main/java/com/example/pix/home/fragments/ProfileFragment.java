@@ -21,12 +21,16 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.fragments.MusicRoomFragment;
+import com.example.pix.chat.fragments.MusicRoomBaseFragment;
+import com.example.pix.chat.fragments.MusicRoomListenerFragment;
+import com.example.pix.chat.fragments.MusicRoomOwnerFragment;
+import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.utils.FetchPath;
 import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
@@ -112,11 +116,11 @@ public class ProfileFragment extends Fragment {
             // The stopListening shortcut button is intended for the owner of the room to stop listening
             // to whichever friend the listenerTimer is attached to
             Button stopListening = view.findViewById(R.id.profile_stop);
-            if (MusicRoomFragment.listenerTimer != null) {
+            if (MusicRoomBaseFragment.listenerTimer != null) {
                 stopListening.setVisibility(View.VISIBLE);
                 stopListening.setOnClickListener(view14 -> {
-                    MusicRoomFragment.listenerTimer.cancel();
-                    MusicRoomFragment.listenerTimer = null;
+                    MusicRoomBaseFragment.listenerTimer.cancel();
+                    MusicRoomBaseFragment.listenerTimer = null;
                     stopListening.setVisibility(View.GONE);
                 });
             }
@@ -172,7 +176,27 @@ public class ProfileFragment extends Fragment {
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
-        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
+        ParseQuery<MusicRoom> q;
+        q = ParseQuery.getQuery(MusicRoom.class);
+        q.whereEqualTo("user", user);
+
+        try {
+            MusicRoom musicRoom = q.getFirst();
+            if (musicRoom == null) {
+                musicRoom = new MusicRoom();
+                musicRoom.setUser(user);
+                musicRoom.save();
+            }
+
+            if (isOwner) {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
+            } else {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
