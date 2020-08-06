@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,14 +19,19 @@ import com.baoyz.widget.PullRefreshLayout;
 import com.example.pix.R;
 import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
+import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
 import com.parse.ParseException;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+
+import static com.example.pix.home.models.Chat.CHAT;
 
 public class ChatsFragment extends Fragment {
 
@@ -81,6 +88,30 @@ public class ChatsFragment extends Fragment {
 
             rvChats.addOnScrollListener(scroll);
 
+            // Handle what happens when a Chat is swiped
+            ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    final int position = viewHolder.getAdapterPosition();
+                    // Get the Chat that was swiped
+                    Chat toArchive = chats.get(position);
+                    // Hide this Chat for this User
+                    Chat.archiveChat(getContext(), toArchive);
+                    Toast.makeText(getContext(), "Chat archived.", Toast.LENGTH_SHORT).show();
+                    // Update our RecyclerView and Adapter
+                    chats.remove(position);
+                    chatsAdapter.notifyItemRemoved(position);
+                }
+            };
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+            itemTouchHelper.attachToRecyclerView(rvChats);
+
+
             PullRefreshLayout layout = view.findViewById(R.id.swipeRefreshLayout);
 
             // Whenever we try to refresh, delete all Chats, and get them again
@@ -126,7 +157,6 @@ public class ChatsFragment extends Fragment {
                     layout.setRefreshing(false);
                 }
             });
-
         } catch (ParseException e) {
             Log.e("Error", "Error getting List of Chats", e);
             Toast.makeText(getContext(), "Error retrieving chats", Toast.LENGTH_SHORT).show();
