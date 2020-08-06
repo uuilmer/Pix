@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -48,6 +50,40 @@ public class LoginActivity extends AppCompatActivity {
         final EditText etUsername = findViewById(R.id.entered_username);
         final EditText etPassword = findViewById(R.id.entered_password);
 
+        Button btnSignup = findViewById(R.id.parse_signup);
+        Button btnSpotify = findViewById(R.id.auth_spotify);
+
+        // If we hit enter from the username, go to the password...
+        etUsername.setOnKeyListener((view, i, keyEvent) -> {
+            if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
+                return etPassword.requestFocus();
+            }
+            return false;
+        });
+
+        // If we hit enter from the password, focus on the login/signup buttons
+        etPassword.setOnKeyListener((view, i, keyEvent) -> {
+            if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
+                return btnSignup.requestFocus();
+            }
+            return false;
+        });
+
+        // If we already have a User logged in, reflect that
+        if (ParseUser.getCurrentUser() != null) {
+            loggedIn = true;
+            (findViewById(R.id.parse_container)).setVisibility(View.GONE);
+            checkIfDone();
+        }
+
+        // If we signed out, we have already made a Spotify Remote
+        if (mSpotifyAppRemote != null) {
+            // We are done Authenticating Spotify
+            authenticated = true;
+            (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+            checkIfDone();
+        }
+
 
         // Attempt to login the User
         (findViewById(R.id.parse_login)).setOnClickListener(unusedView -> {
@@ -64,12 +100,13 @@ public class LoginActivity extends AppCompatActivity {
                     loggedIn = true;
                     (findViewById(R.id.parse_container)).setVisibility(View.GONE);
                     checkIfDone();
+                    btnSpotify.requestFocus();
                 }
             });
         });
 
         // When user clicks register, we set up their account then go to MainActivity
-        (findViewById(R.id.parse_signup)).setOnClickListener(unusedView -> {
+        btnSignup.setOnClickListener(unusedView -> {
             ParseUser newUser = new ParseUser();
             newUser.setUsername(etUsername.getText().toString());
             newUser.setPassword(etPassword.getText().toString());
@@ -85,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
-        (findViewById(R.id.auth_spotify)).setOnClickListener(unusedView -> {
+        btnSpotify.setOnClickListener(unusedView -> {
 
             // Set the connection parameters
             ConnectionParams connectionParams =

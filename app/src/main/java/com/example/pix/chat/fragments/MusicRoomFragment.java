@@ -1,11 +1,14 @@
 package com.example.pix.chat.fragments;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,16 +17,29 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
+import com.example.pix.home.activities.HomeActivity;
+import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
+import com.jackandphantom.androidlikebutton.AndroidLikeButton;
+import com.parse.DeleteCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
+import com.skyfishjy.library.RippleBackground;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.spotify.protocol.client.Subscription;
+import com.spotify.protocol.types.PlayerState;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 
 public class MusicRoomFragment extends Fragment {
@@ -33,18 +49,20 @@ public class MusicRoomFragment extends Fragment {
     // we open.
     public static Timer listenerTimer;
     private ImageView ivPlay;
+    public static Subscription<PlayerState> subscription;
     // We don't need to worry about making the remote static and limiting that only one playerApi can be subscribed to,
     // because the only person that can subscribe to a playerapi is the owner, who can only do it in their
     // profile screen.
     private SpotifyAppRemote remote;
     private ParseQuery<MusicRoom> q;
     public static boolean isOwner;
-    private ImageView playingGif;
+    private RippleBackground rippleBackground;
     private MusicRoom musicRoom;
     private boolean isPlayingLocally;
     private Song nowPlayingInParse;
     private boolean isPlayingInParse;
     public static final String NOW_PLAYING = "nowPlaying";
+    private Like likesThisStreamer;
 
     public MusicRoomFragment(ParseUser ownerOfRoom) {
         this.ownerOfRoom = ownerOfRoom;
@@ -90,23 +108,79 @@ public class MusicRoomFragment extends Fragment {
             Toast.makeText(getContext(), "Error creating MusicRoom", Toast.LENGTH_SHORT).show();
         }
 
+        AndroidLikeButton albLike = view.findViewById(R.id.like);
+        likesThisStreamer = Like.checkIfLikes(ParseUser.getCurrentUser(), musicRoom.getUser());
+
+        if (likesThisStreamer == null) {
+            albLike.setCurrentlyLiked(false);
+        } else {
+            albLike.setCurrentlyLiked(true);
+        }
+
+        if (isOwner) {
+            albLike.setVisibility(View.GONE);
+        } else {
+            albLike.setOnLikeEventListener(new AndroidLikeButton.OnLikeEventListener() {
+                @Override
+                public void onLikeClicked(AndroidLikeButton androidLikeButton) {
+                    likesThisStreamer = new Like();
+                    likesThisStreamer.setListener(ParseUser.getCurrentUser());
+                    likesThisStreamer.setStreamer(ownerOfRoom);
+                    likesThisStreamer.saveInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        albLike.setCurrentlyLiked(true);
+                    });
+                }
+
+                @Override
+                public void onUnlikeClicked(AndroidLikeButton androidLikeButton) {
+                    // When we click unlike, delete the current Like
+                    likesThisStreamer.deleteInBackground(e -> {
+                        if (e != null) {
+                            Toast.makeText(getContext(), "Error liking", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        albLike.setCurrentlyLiked(false);
+
+                        likesThisStreamer = null;
+                    });
+                }
+            });
+        }
+
         // Retrieve the button we will click to start streaming and stop (play)
         ivPlay = view.findViewById(R.id.musicroom_play);
-        playingGif = view.findViewById(R.id.musicroom_playing);
-        Glide.with(getContext()).load(Uri.parse("android.resource://com.example.pix/" + R.drawable.musicroom_playing)).into(playingGif);
-        playingGif.setVisibility(View.GONE);
+        rippleBackground = view.findViewById(R.id.ripple);
 
         // Try to get the current Song
         nowPlayingInParse = musicRoom.getCurrentSong();
 
-        // Case where the current user needs to create a Song for this MusicRoom(None playing)
-        if (nowPlayingInParse == null) {
-            seekSong();
+        // Setup the views based on Parse
+        setup();
+    }
+
+    private void setup() {
+        isPlayingLocally = false;
+
+        // Setup proper image
+        if (isOwner && subscription != null || !isOwner && listenerTimer != null) {
+            isPlayingLocally = true;
+            ivPlay.setImageResource(R.drawable.musicroom_pause);
+            rippleBackground.startRippleAnimation();
+        } else {
+            ivPlay.setImageResource(R.drawable.musicroom_play);
         }
-        // Case where there is already a Song playing (This is mainly for listeners)
-        else {
-            setup();
-        }
+        ivPlay.setOnClickListener(view1 -> {
+            // If we have no Song, make one
+            if (nowPlayingInParse == null) {
+                seekSong();
+            } else {
+                startSync();
+            }
+        });
     }
 
     // Method where this MusicRoom has no Song, and we therefore need to create one
@@ -127,77 +201,50 @@ public class MusicRoomFragment extends Fragment {
                         Toast.makeText(getContext(), "Error updating MusicRoom!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    setup();
+                    startSync();
                 });
             });
             // If the user is a listener and there is no Song, they must wait until the MusicRoom has a Song
-        } else
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        musicRoom = q.getFirst();
-                        nowPlayingInParse = musicRoom.getCurrentSong();
-                        if (nowPlayingInParse != null) {
-                            setup();
-                            this.cancel();
-                        }
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getContext(), "Error looking for new Song!", Toast.LENGTH_SHORT).show();
-                        this.cancel();
-                    }
+        } else {
+            try {
+                musicRoom = q.getFirst();
+                nowPlayingInParse = musicRoom.getCurrentSong();
+                if (nowPlayingInParse != null) {
+                    startSync();
+                } else {
+                    Toast.makeText(getContext(), ownerOfRoom.getUsername() + " is not Streaming", Toast.LENGTH_SHORT).show();
                 }
-            }, 0, 50);
-    }
-
-    private void setup() {
-        try {
-            nowPlayingInParse.fetchIfNeeded();
-
-            isPlayingLocally = false;
-
-            // Setup proper image
-            if (listenerTimer != null) {
-                isPlayingLocally = true;
-                ivPlay.setImageResource(R.drawable.musicroom_pause);
-                playingGif.setVisibility(View.VISIBLE);
-            } else {
-                ivPlay.setImageResource(R.drawable.musicroom_play);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Error getting Current Song!", Toast.LENGTH_SHORT).show();
             }
-            ivPlay.setOnClickListener(unusedView -> startSync());
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Cannot set up Stream!", Toast.LENGTH_SHORT).show();
         }
     }
 
     // This method is called whenever the PLAY/PAUSE button is clicked (It starts/stops the stream)
     private void startSync() {
-        // If the nowPlayingInParse Song in Parse for this db is null, we must have stopped before
-        // (See ending ALL CAPS of this method)
-        if (nowPlayingInParse == null) {
-            Toast.makeText(getContext(), "Tap again to start Stream!", Toast.LENGTH_SHORT).show();
-            // Go back to somehow get a valid Song
-            seekSong();
-            return;
-        }
+        try {
+            nowPlayingInParse.fetchIfNeeded();
 
-        if (!isPlayingLocally) {
-            // If no Song is playing, start playing it(Or streaming it if owner)
-            startStream();
-        } else {
-            // If the Song was playing, stop the stream or stop listening to the stream
-            stopStream();
+            if (!isPlayingLocally) {
+                // If no Song is playing, start playing it(Or streaming it if owner)
+                startStream();
+            } else {
+                // If the Song was playing, stop the stream or stop listening to the stream
+                stopStream();
+            }
+            // Update since we switched whether we are streaming or not
+            isPlayingLocally = !isPlayingLocally;
+        } catch (ParseException e) {
+            Toast.makeText(getContext(), "Error fetching song", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
-        // Update since we switched whether we are streaming or not
-        isPlayingLocally = !isPlayingLocally;
     }
 
     private void startStream() {
         // Start the disk spinning to show that we are streaming/ listening
-        ivPlay.setImageResource(R.drawable.musicroom_pause);
-        playingGif.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(() -> ivPlay.setImageResource(R.drawable.musicroom_pause));
+        rippleBackground.startRippleAnimation();
         try {
             musicRoom = q.getFirst();
             // Fetch the song that's playing at the moment
@@ -207,8 +254,12 @@ public class MusicRoomFragment extends Fragment {
             // Case where the User is the owner
             if (isOwner) {
                 // Check if the song is playing
+                subscription = remote.getPlayerApi().subscribeToPlayerState();
 
-                remote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
+                Toast.makeText(getContext(), "You can now play music in the Spotify App!", Toast.LENGTH_SHORT).show();
+                // Play music on Spotify in case no Song was playing
+                remote.getPlayerApi().resume();
+                subscription.setEventCallback(playerState -> {
                     // Check if the Song changed, in which case we update it in Parse
                     if (!playerState.track.uri.equals(nowPlayingInParse.getURI())) {
                         nowPlayingInParse.setURI(playerState.track.uri);
@@ -238,15 +289,30 @@ public class MusicRoomFragment extends Fragment {
                 }
                 // Every fixed interval, check for updates to Parse
                 listenerTimer = new Timer();
+                // I need to save this Activity, because I won't be able to call getActivity() if we
+                // change from FriendActivity back to HomeActivity, and our listenerTimer would throw an error
+                Activity musicRoomActivity = getActivity();
                 listenerTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         try {
                             // Update our local Parse objects
                             musicRoom = q.getFirst();
-                            Song checkForChange = musicRoom.getCurrentSong().fetch();
+                            Song checkForChange = musicRoom.getCurrentSong();
+                            if (checkForChange == null) {
+                                musicRoomActivity.runOnUiThread(() -> {
+                                    stopStream();
+                                });
+                                return;
+                            }
+                            checkForChange.fetch();
+                            if (checkForChange.getURI() == null) {
+                                nowPlayingInParse = checkForChange;
+                                remote.getPlayerApi().pause();
+                                return;
+                            }
                             // If the song changes, play this new song
-                            if (!checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
+                            if (nowPlayingInParse.getURI() == null || !checkForChange.getURI().equals(nowPlayingInParse.getURI())) {
                                 nowPlayingInParse = checkForChange;
                                 remote.getPlayerApi().play(checkForChange.getURI());
                             }
@@ -273,30 +339,37 @@ public class MusicRoomFragment extends Fragment {
 
     private void stopStream() {
         // Stop the spinning disk since we will no longer be playing/streaming a stream
-        playingGif.setVisibility(View.GONE);
+        rippleBackground.stopRippleAnimation();
 
         // If we were listening to a stream via a listenerTimer, stop it
         if (listenerTimer != null) {
             listenerTimer.cancel();
+            listenerTimer = null;
+            Toast.makeText(getContext(), "Listening Stopped", Toast.LENGTH_SHORT).show();
         }
         // If we were streaming as the owner, stop
         if (isOwner) {
-            remote.getPlayerApi().subscribeToPlayerState().cancel();
+            // Stop the Song in case in wasn't already paused
+            remote.getPlayerApi().pause();
+            subscription.cancel();
+            subscription = null;
             try {
                 // Delete the Song that was playing
                 nowPlayingInParse.delete();
                 // Delete the reference to the Song that was playing from the MusicRoom
                 musicRoom.remove(NOW_PLAYING);
                 musicRoom.save();
-                // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
-                // We need this alert to the method because this method is run every time we start/stop the stream,
-                // and we thus need to make sure the Song we use in this method is valid.
-                nowPlayingInParse = null;
+                Toast.makeText(getContext(), "Streaming Stopped", Toast.LENGTH_SHORT).show();
             } catch (ParseException e) {
                 e.printStackTrace();
                 Toast.makeText(getContext(), "Error deleting Sync Connection", Toast.LENGTH_SHORT).show();
             }
         }
+        // THIS ALERTS THIS METHOD THAT WE HAVE DELETED THE SONG, AKA WE NEED TO SOMEHOW FIND A NEW ONE
+        // We need this alert to the method because this method is run every time we start/stop the stream,
+        // and we thus need to make sure the Song we use in this method is valid.
+        nowPlayingInParse = null;
+
         ivPlay.setImageResource(R.drawable.musicroom_play);
     }
 }

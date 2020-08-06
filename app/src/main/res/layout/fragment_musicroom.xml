@@ -1,21 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
-    <ImageView
-        android:id="@+id/musicroom_play"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:src="@drawable/musicroom_play"/>
-    </LinearLayout>
-    <ImageView
-        android:id="@+id/musicroom_playing"
-        android:layout_width="100dp"
-        android:layout_height="100dp"/>
 
-</LinearLayout>
+    <com.skyfishjy.library.RippleBackground
+        android:id="@+id/ripple"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:rb_color="#0099CC"
+        app:rb_duration="3000"
+        app:rb_radius="32dp"
+        app:rb_rippleAmount="4"
+        app:rb_scale="6">
+
+        <ImageView
+            android:id="@+id/musicroom_play"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/musicroom_play" />
+    </com.skyfishjy.library.RippleBackground>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:gravity="center">
+
+        <com.jackandphantom.androidlikebutton.AndroidLikeButton
+            android:id="@+id/like"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:gravity="center"
+            app:circle_endColor="#f4ac1b"
+            app:circle_startColor="#fcd229"
+            app:dot_color_1="#f5ce31"
+            app:dot_color_2="#ed8128"
+            app:like_icon="@drawable/like"
+            app:unlike_icon="@drawable/unlike" />
+
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -26,6 +26,8 @@ import java.util.List;
 
 public class PopupHelper {
 
+    private static PopupWindow popupWindow;
+
     public static void createPopup(Activity activity, Context context, boolean newPic) {
         ConstraintLayout container = activity.findViewById(R.id.home_container);
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -36,7 +38,7 @@ public class PopupHelper {
         RecyclerView rvResults = popup.findViewById(R.id.popup_rv);
 
         // Position popup
-        PopupWindow popupWindow = new PopupWindow(popup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        popupWindow = new PopupWindow(popup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
         popupWindow.showAtLocation(container, Gravity.CENTER, 0, 0);
         search.requestFocus();
         close.setOnClickListener(unusedView -> popupWindow.dismiss());
@@ -77,5 +79,14 @@ public class PopupHelper {
                 return false;
             }
         });
+    }
+
+    public static void closePopup() {
+        popupWindow.dismiss();
+    }
+
+    public static boolean isActive() {
+        if (popupWindow == null) return false;
+        return popupWindow.isShowing();
     }
 }

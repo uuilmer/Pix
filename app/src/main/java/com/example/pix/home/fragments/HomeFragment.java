@@ -3,6 +3,7 @@ package com.example.pix.home.fragments;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.transition.Explode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,15 +17,23 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerTabStrip;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.pix.R;
+import com.example.pix.chat.fragments.MusicRoomFragment;
 import com.example.pix.home.adapters.PagerAdapter;
+import com.example.pix.home.models.Like;
 import com.example.pix.home.utils.PopupHelper;
 import com.example.pix.login.LoginActivity;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 
 public class HomeFragment extends Fragment {
 
@@ -43,13 +52,43 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ImageView profile = view.findViewById(R.id.home_profile_icon);
+        TextView pix = view.findViewById(R.id.tv_score);
+
+        // Set the current Pix Score
+        pix.setText("" + Like.getPix(ParseUser.getCurrentUser()));
+
+        // Set the User profile picture
+        ParseFile image = ParseUser.getCurrentUser().getParseFile(USER_PROFILE_CODE);
+        if (image != null) {
+            Glide.with(view).load(image.getUrl()).circleCrop().into(profile);
+        }
+
+        ProfileFragment profileFragment = new ProfileFragment(ParseUser.getCurrentUser());
+
+        profileFragment.setSharedElementEnterTransition(new Explode());
+        profileFragment.setEnterTransition(new Explode());
+        setExitTransition(new Explode());
+        profileFragment.setSharedElementReturnTransition(new Explode());
+
         // When we click on the edit profile Toolbar button, replace this screen with a ProfileFragment
-        (view.findViewById(R.id.home_profile_icon)).setOnClickListener(unusedView -> {
-            getActivity()
-                    .getSupportFragmentManager()
+        profile.setOnClickListener(unusedView -> {
+            // If we have previously created a ProfileFragment, get it..
+            if (getParentFragmentManager().getFragments().contains(profileFragment)) {
+                getParentFragmentManager()
+                        .beginTransaction()
+                        // ..show it..
+                        .show(profileFragment)
+                        // ..and hide this HomeFragment
+                        .hide(this)
+                        .commit();
+                return;
+            }
+            // If we haven't, add it
+            getParentFragmentManager()
                     .beginTransaction()
-                    .addToBackStack("stack")
-                    .replace(R.id.home_profile, new ProfileFragment(ParseUser.getCurrentUser()))
+                    .add(R.id.home_profile, profileFragment)
+                    .hide(this)
                     .commit();
         });
 
@@ -75,8 +114,6 @@ public class HomeFragment extends Fragment {
         colors.add(Color.GREEN);
 
 
-        ImageView profile = view.findViewById(R.id.home_profile_icon);
-        TextView pix = view.findViewById(R.id.tv_score);
         ViewPager viewPager = view.findViewById(R.id.vpPager);
         // Link the colors to each page
         LinearLayout header = view.findViewById(R.id.header);
@@ -95,7 +132,7 @@ public class HomeFragment extends Fragment {
                         as the icon tints. */
                     int scaled = (int) (positionOffset * MAX_ALPHA);
                     headerBackground.setAlpha(MAX_ALPHA - scaled);
-                    profile.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
+                    profile.setAlpha((float) (1 - (positionOffset * 0.8)));
                     svChats.setColorFilter(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
                     pix.setTextColor(Color.argb(MAX_ALPHA, scaled, scaled, scaled));
                 }
