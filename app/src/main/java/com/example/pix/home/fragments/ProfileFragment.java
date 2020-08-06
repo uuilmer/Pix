@@ -167,28 +167,31 @@ public class ProfileFragment extends Fragment {
         TextView pix = view.findViewById(R.id.profile_pix);
         pix.setText(Like.getPix(user) + "P");
 
-        // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
-        // and update their personal Musicroom accordingly
-        ParseQuery<MusicRoom> q;
-        q = ParseQuery.getQuery(MusicRoom.class);
-        q.whereEqualTo("user", user);
+        // Only make the MusicRoomFragment if this User has logged into Spotify
+        if (LoginActivity.MUSIC_FEATURE_ENABLED) {
+            // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
+            // and update their personal Musicroom accordingly
+            ParseQuery<MusicRoom> q;
+            q = ParseQuery.getQuery(MusicRoom.class);
+            q.whereEqualTo("user", user);
 
-        try {
-            MusicRoom musicRoom = q.getFirst();
-            if (musicRoom == null) {
-                musicRoom = new MusicRoom();
-                musicRoom.setUser(user);
-                musicRoom.save();
-            }
+            try {
+                MusicRoom musicRoom = q.getFirst();
+                if (musicRoom == null) {
+                    musicRoom = new MusicRoom();
+                    musicRoom.setUser(user);
+                    musicRoom.save();
+                }
 
-            if (isOwner) {
-                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
-            } else {
-                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
+                if (isOwner) {
+                    getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
+                } else {
+                    getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -224,11 +227,5 @@ public class ProfileFragment extends Fragment {
                 });
             }
         }
-    }
-
-    // We need to make sure to stop the Timer that updates the number of "Pix"(Likes) when this Fragment is ended
-    @Override
-    public void onDetach() {
-        super.onDetach();
     }
 }

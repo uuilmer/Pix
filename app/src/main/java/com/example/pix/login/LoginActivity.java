@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -27,8 +28,9 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
+    public static boolean MUSIC_FEATURE_ENABLED = true;
     private boolean loggedIn = false;
-    private boolean authenticated = false;
+    protected boolean authenticated = false;
     private static SpotifyAppRemote mSpotifyAppRemote;
     private final static int RECORD_VIDEO = 100;
 
@@ -37,7 +39,8 @@ public class LoginActivity extends AppCompatActivity {
         return mSpotifyAppRemote;
     }
 
-    private void checkIfDone() {
+    // When one of (spotify, parse) is done, check if both are done
+    protected void checkIfDone() {
         if (loggedIn && authenticated) {
             // If we are missing a permission, request it
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
@@ -58,8 +61,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +110,13 @@ public class LoginActivity extends AppCompatActivity {
         (findViewById(R.id.parse_login)).setOnClickListener(unusedView -> {
             String username = etUsername.getText().toString();
             String password = etPassword.getText().toString();
+
+            // Fields cannot be blank
+            if (username.length() == 0 || password.length() == 0) {
+                Toast.makeText(this, "No field can be blank!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             ParseUser.logInInBackground(username, password, new LogInCallback() {
                 @Override
                 public void done(ParseUser user, ParseException e) {
@@ -127,9 +135,18 @@ public class LoginActivity extends AppCompatActivity {
 
         // When user clicks register, we set up their account then go to MainActivity
         btnSignup.setOnClickListener(unusedView -> {
+            String username = etUsername.getText().toString();
+            String password = etPassword.getText().toString();
+
+            // Fields cannot be blank
+            if (username.length() == 0 || password.length() == 0) {
+                Toast.makeText(this, "No field can be blank!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             ParseUser newUser = new ParseUser();
-            newUser.setUsername(etUsername.getText().toString());
-            newUser.setPassword(etPassword.getText().toString());
+            newUser.setUsername(username);
+            newUser.setPassword(password);
             try {
                 newUser.signUp();
                 Toast.makeText(LoginActivity.this, "Successfully signed up!", Toast.LENGTH_SHORT).show();
@@ -143,6 +160,13 @@ public class LoginActivity extends AppCompatActivity {
 
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
         btnSpotify.setOnClickListener(unusedView -> {
+
+            // If the USer doesn't have Spotify installed, let the USer decide to install it or disable the music feature
+            if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
+                PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
+                dialog.show(getSupportFragmentManager(), null);
+                return;
+            }
 
             // Set the connection parameters
             ConnectionParams connectionParams =
@@ -166,7 +190,12 @@ public class LoginActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(Throwable throwable) {
-                            Log.e("MainActivity", throwable.getMessage(), throwable);
+                            // If we failed to connect to Spotify, chances are the User hasn't signed in yet
+                            Toast.makeText(LoginActivity.this, "Sign in with Spotify", Toast.LENGTH_SHORT).show();
+
+                            // If we are not logged in to Spotify, give User the option to login or disable feature
+                            PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true);
+                            dialogFragment.show(getSupportFragmentManager(), null);
                         }
                     });
         });
