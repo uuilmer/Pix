@@ -18,7 +18,7 @@ public class Like extends ParseObject {
     public static final String LISTENER_CODE = "listener";
 
     public ParseUser getListener() {
-        return getParseUser("listener");
+        return getParseUser(LISTENER_CODE);
     }
 
     public static Like checkIfLikes(ParseUser listener, ParseUser streamer){
@@ -45,14 +45,14 @@ public class Like extends ParseObject {
     }
 
     public void setListener(ParseUser listener) {
-        put("listener", listener);
+        put(LISTENER_CODE, listener);
     }
 
     public ParseUser getStreamer() {
-        return getParseUser("streamer");
+        return getParseUser(LISTENER_CODE);
     }
 
     public void setStreamer(ParseUser streamer) {
-        put("streamer", streamer);
+        put(STREAMER_CODE, streamer);
     }
 }
