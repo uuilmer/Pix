@@ -49,7 +49,6 @@ public class ProfileFragment extends Fragment {
     private ImageView profile;
     private ParseUser user;
     private boolean isOwner;
-    private Timer timer;
 
     public ProfileFragment(ParseUser user) {
         this.user = user;
@@ -165,14 +164,7 @@ public class ProfileFragment extends Fragment {
         }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        // Check every 2 seconds for how many "Pix"(Likes) this person has
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                getActivity().runOnUiThread(() -> pix.setText(Like.getPix(user) + "P"));
-            }
-        }, 0, 2000);
+        pix.setText(Like.getPix(user) + "P");
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
@@ -238,6 +230,5 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        timer.cancel();
     }
 }
