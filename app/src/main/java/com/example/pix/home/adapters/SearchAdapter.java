@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.example.pix.R;
 import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.models.Chat;
+import com.example.pix.home.models.Like;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
@@ -86,7 +87,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
 
         public void bind(ParseUser user) {
-            this.tvPix.setText(Like);
+            this.tvPix.setText(Like.getPix(user) + "P");
             this.llSelect.setOnClickListener(unusedView -> {
                 // If we select a result, we will want to go to ChatActivity
                 Intent i = new Intent(context, FriendActivity.class);

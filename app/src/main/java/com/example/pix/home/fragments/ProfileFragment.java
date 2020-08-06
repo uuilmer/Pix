@@ -115,7 +115,7 @@ public class ProfileFragment extends Fragment {
             Button stopListening = view.findViewById(R.id.profile_stop);
             if (MusicRoomFragment.listenerTimer != null) {
                 stopListening.setVisibility(View.VISIBLE);
-                stopListening.setOnClickListener(view14 -> {
+                stopListening.setOnClickListener(unusedView -> {
                     MusicRoomFragment.listenerTimer.cancel();
                     MusicRoomFragment.listenerTimer = null;
                     stopListening.setVisibility(View.GONE);

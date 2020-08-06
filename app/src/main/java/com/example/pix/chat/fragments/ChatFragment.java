@@ -86,8 +86,6 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERM);
-
         // Use the objectId we passed to get this Chat
         String chatId = getActivity().getIntent().getStringExtra(CHAT);
         chat = Chat.getChat(chatId);
@@ -326,17 +324,6 @@ public class ChatFragment extends Fragment {
                     Toast.makeText(getContext(), "Error retrieving image", Toast.LENGTH_SHORT).show();
                 }
             }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getContext(), "You can now send pictures!", Toast.LENGTH_SHORT).show();
-        } else {
-            // INSERT HERE BETTER DISABLING OF SENDING PICS SINCE USER DID NOT ALLOW IT.(MAYBE)
-            ivPictures.setVisibility(View.GONE);
         }
     }
 }

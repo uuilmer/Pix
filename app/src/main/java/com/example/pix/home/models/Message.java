@@ -22,27 +22,27 @@ public class Message extends ParseObject {
     }
 
     public Chat getChat() {
-        return (Chat) getParseObject("chat");
+        return (Chat) getParseObject(CHAT);
     }
 
     public void setChat(Chat chat) {
-        put("chat", chat);
+        put(CHAT, chat);
     }
 
     public ParseUser getFrom() {
-        return getParseUser("from");
+        return getParseUser(SENDER);
     }
 
     public void setFrom(ParseUser user) {
-        put("from", user);
+        put(SENDER, user);
     }
 
     public ParseUser getTo() {
-        return getParseUser("to");
+        return getParseUser(RECIPIENT);
     }
 
     public void setTo(ParseUser user) {
-        put("to", user);
+        put(RECIPIENT, user);
     }
 
     public Date getTime() {
@@ -50,19 +50,19 @@ public class Message extends ParseObject {
     }
 
     public String getText() {
-        return getString("text");
+        return getString(TEXT);
     }
 
     public void setText(String text) {
-        put("text", text);
+        put(TEXT, text);
     }
 
     public ParseFile getPic() {
-        return getParseFile("pic");
+        return getParseFile(PICTURE);
     }
 
     public void setPic(ParseFile pic) {
-        put("pic", pic);
+        put(PICTURE, pic);
     }
 
     public boolean isSnap() {
