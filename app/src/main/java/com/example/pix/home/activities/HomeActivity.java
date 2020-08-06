@@ -12,7 +12,6 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 public class HomeActivity extends AppCompatActivity {
 
-    public SpotifyAppRemote mSpotifyAppRemote;
     public static final int RESULT_LOAD_IMG = 100;
     public static HomeFragment homeFragment;
 

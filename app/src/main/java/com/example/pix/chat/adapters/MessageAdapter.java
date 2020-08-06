@@ -3,14 +3,12 @@ package com.example.pix.chat.adapters;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -63,6 +61,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     protected class ViewHolder extends RecyclerView.ViewHolder {
 
+        public static final String MP4_SUFFIX = ".mp4";
         private TextView name;
         private TextView text;
         private Message message;
@@ -70,7 +69,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         private LinearLayout openSnap;
         private View snapIndicator;
         private TextView snapText;
-        public static final String MP4_SUFFIX = ".mp4";
         private ParseFile content;
 
         public ViewHolder(@NonNull View itemView) {

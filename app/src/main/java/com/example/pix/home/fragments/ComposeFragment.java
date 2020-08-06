@@ -42,9 +42,7 @@ import java.util.TimerTask;
 
 public class ComposeFragment extends Fragment {
 
-    private static final int RECORD_AUDIO = 1000;
     private static final int MAX_CLICK_DURATION = 200;
-    private FriendActivity mActivity;
     public static ParseFile contentToSave;
     private int currCamera;
     private Camera camera;

@@ -39,13 +39,9 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    SpotifyAppRemote mSpotifyAppRemote;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        mSpotifyAppRemote = LoginActivity.getmSpotifyAppRemote();
 
         // When we click on the edit profile Toolbar button, replace this screen with a ProfileFragment
         (view.findViewById(R.id.home_profile_icon)).setOnClickListener(unusedView -> {

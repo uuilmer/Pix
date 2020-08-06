@@ -103,7 +103,7 @@ public class ChatsFragment extends Fragment {
                         }
                         // Delete them
                         // The short-hand for-loop gave concurrent complications at times
-                        for (int i = 0; i < chats.size(); i++){
+                        for (int i = 0; i < chats.size(); i++) {
                             if (toRemove.contains(chats.get(i).getObjectId())) {
                                 chats.remove(i);
                                 i--;

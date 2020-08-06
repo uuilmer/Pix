@@ -20,7 +20,6 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CODE = 1337;
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
     private boolean loggedIn = false;
     private boolean authenticated = false;

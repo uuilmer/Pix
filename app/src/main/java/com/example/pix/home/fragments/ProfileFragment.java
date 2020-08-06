@@ -74,16 +74,18 @@ public class ProfileFragment extends Fragment {
 
         profile = view.findViewById(R.id.profile_pic);
 
+        ParseFile profilePic = user.getParseFile(USER_PROFILE_CODE);
         // Load profile pic
-        Glide.with(getContext())
-                .load(user
-                        .getParseFile(USER_PROFILE_CODE).getUrl())
-                .circleCrop()
-                .into(profile);
+        if (profilePic != null) {
+            Glide.with(getContext())
+                    .load(profilePic.getUrl())
+                    .circleCrop()
+                    .into(profile);
+        }
 
         // If we have a listenerTimer in MusicRoomFragment, we must make it possible to end it.
         Button stopListening = view.findViewById(R.id.profile_stop);
-        if(MusicRoomFragment.listenerTimer != null){
+        if (MusicRoomFragment.listenerTimer != null) {
             stopListening.setVisibility(View.VISIBLE);
             stopListening.setOnClickListener(unusedView -> {
                 MusicRoomFragment.listenerTimer.cancel();
