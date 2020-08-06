@@ -111,9 +111,7 @@ public class MusicRoomListenerFragment extends MusicRoomBaseFragment {
             remote.getPlayerApi().pause();
         // Every fixed interval, check for updates to Parse
         listenerTimer = new Timer();
-        // I need to save this Activity, because I won't be able to call getActivity() if we
-        // change from FriendActivity back to HomeActivity, and our listenerTimer would throw an error
-        Activity musicRoomActivity = getActivity();
+        // Keep updating the current song for this Listener
         listenerTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -122,7 +120,9 @@ public class MusicRoomListenerFragment extends MusicRoomBaseFragment {
                     musicRoom = q.getFirst();
                     Song checkForChange = musicRoom.getCurrentSong();
                     if (checkForChange == null) {
-                        musicRoomActivity.runOnUiThread(() -> {
+                        // We must run stopStream in the UiThread because it makes changes to views(Change the playing ImageView
+                        // to not playing) that were defined in the main thread, and thus can only be changed there
+                        getActivity().runOnUiThread(() -> {
                             stopStream();
                             this.cancel();
                         });

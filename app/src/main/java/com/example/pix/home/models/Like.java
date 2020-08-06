@@ -15,6 +15,7 @@ import java.util.List;
 public class Like extends ParseObject {
 
     public static final String STREAMER_CODE = "streamer";
+    public static final String LISTENER_CODE = "listener";
 
     public ParseUser getListener() {
         return getParseUser("listener");
@@ -22,8 +23,8 @@ public class Like extends ParseObject {
 
     public static Like checkIfLikes(ParseUser listener, ParseUser streamer){
         ParseQuery<Like> q = ParseQuery.getQuery(Like.class);
-        q.whereEqualTo("listener", listener);
-        q.whereEqualTo("streamer", streamer);
+        q.whereEqualTo(LISTENER_CODE, listener);
+        q.whereEqualTo(STREAMER_CODE, streamer);
         try {
             return q.getFirst();
         } catch (ParseException e) {
