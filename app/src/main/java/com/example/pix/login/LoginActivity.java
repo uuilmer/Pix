@@ -21,10 +21,10 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CODE = 1337;
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
+    public static boolean MUSIC_FEATURE_ENABLED = true;
     private boolean loggedIn = false;
-    private boolean authenticated = false;
+    protected boolean authenticated = false;
     private static SpotifyAppRemote mSpotifyAppRemote;
 
     // We can access the Spotify Remote in later Activities
@@ -33,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // When one of (spotify, parse) is done, check if both are done
-    private void checkIfDone() {
+    protected void checkIfDone() {
         if (loggedIn && authenticated) {
             Intent i = new Intent(LoginActivity.this, HomeActivity.class);
             startActivity(i);
@@ -107,11 +107,8 @@ public class LoginActivity extends AppCompatActivity {
 
             // If the USer doesn't have Spotify installed, launch the download page on the Play Store
             if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(
-                        "https://play.google.com/store/apps/details?id=com.spotify.music"));
-                intent.setPackage("com.android.vending");
-                startActivity(intent);
+                PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
+                dialog.show(getSupportFragmentManager(), null);
                 return;
             }
 
@@ -131,6 +128,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             // We are done Authenticating Spotify
                             (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+                            authenticated = true;
                             checkIfDone();
                         }
 
@@ -139,13 +137,10 @@ public class LoginActivity extends AppCompatActivity {
                             // If we failed to connect to Spotify, chances are the User hasn't signed in yet
                             Toast.makeText(LoginActivity.this, "Sign in with Spotify", Toast.LENGTH_SHORT).show();
 
-                            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.spotify.music");
-                            if (launchIntent != null) {
-                                startActivity(launchIntent);//null pointer check in case package name was not found
-                            }
+                            PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true);
+                            dialogFragment.show(getSupportFragmentManager(), null);
                         }
                     });
-            authenticated = true;
         });
     }
 

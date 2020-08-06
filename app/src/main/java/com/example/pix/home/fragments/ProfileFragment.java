@@ -83,7 +83,7 @@ public class ProfileFragment extends Fragment {
 
         // If we have a listenerTimer in MusicRoomFragment, we must make it possible to end it.
         Button stopListening = view.findViewById(R.id.profile_stop);
-        if(MusicRoomFragment.listenerTimer != null){
+        if (MusicRoomFragment.listenerTimer != null) {
             stopListening.setVisibility(View.VISIBLE);
             stopListening.setOnClickListener(unusedView -> {
                 MusicRoomFragment.listenerTimer.cancel();
@@ -139,7 +139,9 @@ public class ProfileFragment extends Fragment {
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
-        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
+        if (LoginActivity.MUSIC_FEATURE_ENABLED) {
+            getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
