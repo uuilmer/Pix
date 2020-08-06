@@ -137,9 +137,10 @@ public class ProfileFragment extends Fragment {
         TextView pix = view.findViewById(R.id.profile_pix);
         pix.setText("" + user.getInt(USER_PIX));
 
-        // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
-        // and update their personal Musicroom accordingly
+        // Only make the MusicRoomFragment if this User has logged into Spotify
         if (LoginActivity.MUSIC_FEATURE_ENABLED) {
+            // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
+            // and update their personal Musicroom accordingly
             getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
         }
     }

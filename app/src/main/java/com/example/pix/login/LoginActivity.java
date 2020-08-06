@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
         (findViewById(R.id.auth_spotify)).setOnClickListener(unusedView -> {
 
-            // If the USer doesn't have Spotify installed, launch the download page on the Play Store
+            // If the USer doesn't have Spotify installed, let the USer decide to install it or disable the music feature
             if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
                 PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
                 dialog.show(getSupportFragmentManager(), null);
@@ -137,6 +137,7 @@ public class LoginActivity extends AppCompatActivity {
                             // If we failed to connect to Spotify, chances are the User hasn't signed in yet
                             Toast.makeText(LoginActivity.this, "Sign in with Spotify", Toast.LENGTH_SHORT).show();
 
+                            // If we are not logged in to Spotify, give User the option to login or disable feature
                             PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true);
                             dialogFragment.show(getSupportFragmentManager(), null);
                         }
