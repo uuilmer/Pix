@@ -23,7 +23,7 @@
         android:background="@drawable/rounded_corners"
         android:backgroundTint="#FFEB3B"
         android:padding="20dp"
-        android:src="@drawable/spotify" />
+        android:src="@drawable/default_friend" />
 
     <EditText
         android:id="@+id/profile_name"

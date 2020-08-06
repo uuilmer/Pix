@@ -97,12 +97,14 @@ public class ProfileFragment extends Fragment {
 
         profile = view.findViewById(R.id.profile_pic);
 
+        ParseFile profilePic = user.getParseFile(USER_PROFILE_CODE);
         // Load profile pic
-        Glide.with(getContext())
-                .load(user
-                        .getParseFile(USER_PROFILE_CODE).getUrl())
-                .circleCrop()
-                .into(profile);
+        if (profilePic != null) {
+            Glide.with(getContext())
+                    .load(profilePic.getUrl())
+                    .circleCrop()
+                    .into(profile);
+        }
 
         // We need to differentiate if this ProfileFragment is a friend or the user
         // because we use a different xml layout for each case.
@@ -179,6 +181,7 @@ public class ProfileFragment extends Fragment {
         if (resultCode == RESULT_OK) {
             if (requestCode == RESULT_LOAD_IMG) {
                 final Uri imageUri = data.getData();
+                System.out.println("pathy" + FetchPath.getPath(getContext(), imageUri));
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
                 // Assign it to the User
