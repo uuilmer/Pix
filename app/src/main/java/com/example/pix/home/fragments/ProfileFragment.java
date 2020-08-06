@@ -77,6 +77,10 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // If we have disabled the Music feature, Hide the label for it
+        if (!LoginActivity.MUSIC_FEATURE_ENABLED) {
+            view.findViewById(R.id.profile_text_stream).setVisibility(View.GONE);
+        }
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
         setExitTransition(new Explode());
