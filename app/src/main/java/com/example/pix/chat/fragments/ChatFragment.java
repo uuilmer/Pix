@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -115,7 +117,7 @@ public class ChatFragment extends Fragment {
         if (newPic != null) {
             newPic.saveInBackground((SaveCallback) e -> {
                 if (e != null) {
-                    Toast.makeText(getContext(), "Error sending pic", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error sending snap", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 Message m = new Message();
@@ -123,6 +125,8 @@ public class ChatFragment extends Fragment {
                 m.setFrom(ParseUser.getCurrentUser());
                 m.setTo(friend);
                 m.setChat(chat);
+                // If we took a new picture with Camera, this is a new SNap
+                m.setIsSnap(true);
                 saveMessage(m);
             });
         }
@@ -157,8 +161,12 @@ public class ChatFragment extends Fragment {
         manager.setReverseLayout(true);
 
         try {
+            // This large ImageView covers the entire ChatFragment and will be used to display Snaps
+            // Same goes for the large VideoView
+            ImageView imageContainer = view.findViewById(R.id.chat_snap_pic);
+            VideoView videoContainer = view.findViewById(R.id.chat_snap_vid);
             messages = chat.getMessages(0, ParseUser.getCurrentUser());
-            messageAdapter = new MessageAdapter(getContext(), messages);
+            messageAdapter = new MessageAdapter(getContext(), messages, imageContainer, videoContainer);
             rvMessages.setAdapter(messageAdapter);
             rvMessages.setLayoutManager(manager);
             EndlessRecyclerViewScrollListener scroll = new EndlessRecyclerViewScrollListener(manager) {
@@ -166,6 +174,10 @@ public class ChatFragment extends Fragment {
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView unusedView) {
                     try {
                         chat.getMessagesInBackground(page, ParseUser.getCurrentUser(), (objects, e) -> {
+                            if (e != null) {
+                                Toast.makeText(getContext(), "Error getting more messages", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             messages.addAll(objects);
                             messageAdapter.notifyDataSetChanged();
                         });
@@ -208,7 +220,11 @@ public class ChatFragment extends Fragment {
             });
 
             // Record the last message we received's time
-            lastMessage = messages.get(0).getTime();
+            if (messages.size() == 0) {
+                lastMessage = null;
+            } else {
+                lastMessage = messages.get(0).getTime();
+            }
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -217,7 +233,9 @@ public class ChatFragment extends Fragment {
                     q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
                     // Check if there is a message in this Chat, to the current user who's time is greater
                     // than our latest message
-                    q.whereGreaterThan(CREATED_AT, lastMessage);
+                    if (lastMessage != null) {
+                        q.whereGreaterThan(CREATED_AT, lastMessage);
+                    }
                     q.orderByAscending(CREATED_AT);
                     q.findInBackground((newMessages, e) -> {
                         if (e != null) {
@@ -234,7 +252,11 @@ public class ChatFragment extends Fragment {
 
                         // Alert our RecyclerView and Adapter
                         messageAdapter.notifyDataSetChanged();
-                        lastMessage = messages.get(0).getTime();
+                        if (messages.size() == 0) {
+                            lastMessage = null;
+                        } else {
+                            lastMessage = messages.get(0).getTime();
+                        }
                         manager.scrollToPosition(0);
                     });
                 }

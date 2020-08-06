@@ -1,10 +1,22 @@
 package com.example.pix.home.fragments;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
+import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import android.os.Environment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,25 +26,33 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
+import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.utils.CameraPreview;
 import com.example.pix.home.utils.PopupHelper;
 import com.parse.ParseFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ComposeFragment extends Fragment {
 
-    public static ParseFile image;
+    private static final int RECORD_AUDIO = 1000;
+    private static final int MAX_CLICK_DURATION = 200;
+    private FriendActivity mActivity;
+    public static ParseFile contentToSave;
     private int currCamera;
     private Camera camera;
     private CameraPreview preview;
     private FrameLayout frameLayout;
     private Button take;
+    private MediaRecorder recorder;
+    private long timeclicked;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -48,6 +68,7 @@ public class ComposeFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -58,6 +79,7 @@ public class ComposeFragment extends Fragment {
         setup();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("ClickableViewAccessibility")
     private void setup() {
         currCamera = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -65,6 +87,11 @@ public class ComposeFragment extends Fragment {
 
         // Set as Portrait
         camera.setDisplayOrientation(90);
+        // I needed to change the Camera itself's rotation, because it was displaying correctly,
+        // but the pictures it was taking were rotated
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setRotation(270);
+        camera.setParameters(parameters);
 
         // Create the preview and set as the FrameLayout
         preview = new CameraPreview(getContext(), camera);
@@ -85,6 +112,9 @@ public class ComposeFragment extends Fragment {
                     }
                     camera = Camera.open(currCamera);
                     camera.setDisplayOrientation(90);
+                    Camera.Parameters parameters = camera.getParameters();
+                    parameters.setRotation(270);
+                    camera.setParameters(parameters);
                     preview = new CameraPreview(getContext(), camera);
                     frameLayout.removeAllViews();
                     frameLayout.addView(preview);
@@ -102,7 +132,7 @@ public class ComposeFragment extends Fragment {
 
         // When we are done taking a picture, go to a new ChatActivity with this new Image ParseFile
         Camera.PictureCallback callback = (bytes, camera) -> {
-            image = new ParseFile(bytes);
+            contentToSave = new ParseFile(bytes);
             // Create popup to select who to send to
             if (getActivity() instanceof HomeActivity) {
                 PopupHelper.createPopup(getActivity(), getContext(), true);
@@ -111,17 +141,80 @@ public class ComposeFragment extends Fragment {
                 // thus no need for popup
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.friend_container, new ChatFragment(image))
+                        .replace(R.id.friend_container, new ChatFragment(contentToSave))
                         .commit();
             }
         };
 
-        // When we take a pic, do the above ^
-        take.setOnClickListener(unusedView -> camera.takePicture(() -> {
+        // Create a File in our external storage(We can't write into local storage)
+        File path = Environment.getExternalStorageDirectory();
+        File video = new File(path, "/" + "video.mp4");
 
-        }, null, callback));
+        Timer startRecord = new Timer();
+        // When we touch the take snap content icon...
+        take.setOnTouchListener((unusedView, motionEvent) -> {
+            // If this is us clicking down...
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                // Note the current time
+                timeclicked = System.currentTimeMillis();
+                // In 200 milliseconds(MAX_CLICK_DURATION) start recording...
+                startRecord.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        recorder = new MediaRecorder();
+                        camera.lock();
+                        camera.unlock();
+                        // Set the camera, rotation, video and audio source, and our new output File
+                        recorder.setCamera(camera);
+                        recorder.setOrientationHint(270);
+                        recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+                        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+                        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+                        recorder.setOutputFile(video);
+                        try {
+                            recorder.prepare();
+                            recorder.start();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "Error starting Video", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, MAX_CLICK_DURATION);
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                // If it hasn't been 200 millis yet, and we just let go of the take button, it was a single click..
+                if (System.currentTimeMillis() - timeclicked < MAX_CLICK_DURATION) {
+                    // We cancel the video, take a pic and call our callback
+                    startRecord.cancel();
+                    camera.takePicture(() -> {
+                    }, null, callback);
+                    return true;
+                }
+                // If we let go of the take button sometime after 200 millis, the video must have started...
+                // Stop it, save it as ParseFile..
+                recorder.stop();
+                contentToSave = new ParseFile(video);
+                recorder.release();
+
+                // If we are in HomeActivity, we need to figure out who to send the Snap to, so create a popup
+                if (getActivity() instanceof HomeActivity) {
+                    PopupHelper.createPopup(getActivity(), getContext(), true);
+                } else {
+                    // Case where this ComposeFragment was called from ChatActivity so we know who to send it to
+                    // thus no need for popup
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.friend_container, new ChatFragment(contentToSave))
+                            .commit();
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onResume() {
         super.onResume();

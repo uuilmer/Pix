@@ -88,7 +88,11 @@ public class ChatsFragment extends Fragment {
             // Whenever we try to refresh, delete all Chats, and get them again
             layout.setRefreshStyle(PullRefreshLayout.STYLE_WATER_DROP);
 
-            lowerLimit = chats.get(0).getUpdatedAt();
+            if (chats.size() == 0) {
+                lowerLimit = null;
+            } else {
+                lowerLimit = chats.get(0).getUpdatedAt();
+            }
             layout.setOnRefreshListener(() -> {
                 try {
                     Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
@@ -98,9 +102,11 @@ public class ChatsFragment extends Fragment {
                             toRemove.add(c.getObjectId());
                         }
                         // Delete them
-                        for (Chat c : chats) {
-                            if (toRemove.contains(c.getObjectId())) {
-                                chats.remove(c);
+                        // The short-hand for-loop gave concurrent complications at times
+                        for (int i = 0; i < chats.size(); i++){
+                            if (toRemove.contains(chats.get(i).getObjectId())) {
+                                chats.remove(i);
+                                i--;
                             }
                         }
                         // Add the to the top/add new chats
@@ -110,7 +116,11 @@ public class ChatsFragment extends Fragment {
                         chatsAdapter.notifyDataSetChanged();
                         layout.setRefreshing(false);
                         // Our newest message is now newer
-                        lowerLimit = chats.get(0).getUpdatedAt();
+                        if (chats.size() == 0) {
+                            lowerLimit = null;
+                        } else {
+                            lowerLimit = chats.get(0).getUpdatedAt();
+                        }
                     }, lowerLimit);
                 } catch (ParseException e) {
                     e.printStackTrace();
