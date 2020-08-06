@@ -21,12 +21,16 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.pix.R;
-import com.example.pix.chat.fragments.MusicRoomFragment;
+import com.example.pix.chat.fragments.MusicRoomBaseFragment;
+import com.example.pix.chat.fragments.MusicRoomListenerFragment;
+import com.example.pix.chat.fragments.MusicRoomOwnerFragment;
+import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.utils.FetchPath;
 import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
@@ -45,7 +49,6 @@ public class ProfileFragment extends Fragment {
     private ImageView profile;
     private ParseUser user;
     private boolean isOwner;
-    private Timer timer;
 
     public ProfileFragment(ParseUser user) {
         this.user = user;
@@ -113,11 +116,11 @@ public class ProfileFragment extends Fragment {
             // The stopListening shortcut button is intended for the owner of the room to stop listening
             // to whichever friend the listenerTimer is attached to
             Button stopListening = view.findViewById(R.id.profile_stop);
-            if (MusicRoomFragment.listenerTimer != null) {
+            if (MusicRoomBaseFragment.listenerTimer != null) {
                 stopListening.setVisibility(View.VISIBLE);
-                stopListening.setOnClickListener(unusedView -> {
-                    MusicRoomFragment.listenerTimer.cancel();
-                    MusicRoomFragment.listenerTimer = null;
+                stopListening.setOnClickListener(view14 -> {
+                    MusicRoomBaseFragment.listenerTimer.cancel();
+                    MusicRoomBaseFragment.listenerTimer = null;
                     stopListening.setVisibility(View.GONE);
                 });
             }
@@ -162,18 +165,31 @@ public class ProfileFragment extends Fragment {
         }
         // Set User's number of Pix
         TextView pix = view.findViewById(R.id.profile_pix);
-        // Check every 2 seconds for how many "Pix"(Likes) this person has
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                getActivity().runOnUiThread(() -> pix.setText(Like.getPix(user) + "P"));
-            }
-        }, 0, 2000);
+        pix.setText(Like.getPix(user) + "P");
 
         // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
         // and update their personal Musicroom accordingly
-        getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomFragment(user)).commit();
+        ParseQuery<MusicRoom> q;
+        q = ParseQuery.getQuery(MusicRoom.class);
+        q.whereEqualTo("user", user);
+
+        try {
+            MusicRoom musicRoom = q.getFirst();
+            if (musicRoom == null) {
+                musicRoom = new MusicRoom();
+                musicRoom.setUser(user);
+                musicRoom.save();
+            }
+
+            if (isOwner) {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
+            } else {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -184,16 +200,27 @@ public class ProfileFragment extends Fragment {
                 final Uri imageUri = data.getData();
                 // When we return from choosing a picture, save it as a ParseFile THEN update the current ImageView
                 ParseFile toSave = new ParseFile(new File(FetchPath.getPath(getContext(), imageUri)));
-
+                // Assign it to the User
                 ParseUser.getCurrentUser().put(USER_PROFILE_CODE, toSave);
-                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
+
+                // Save the new profile pic in Parse
+                toSave.saveInBackground((SaveCallback) e -> {
+                    if (e != null) {
+                        Toast.makeText(getContext(), "Unable to save Pic", Toast.LENGTH_SHORT).show();
+                        System.out.println(e.getMessage());
+                        return;
+                    }
+                    // Save the User to keep his assigned image
+                    ParseUser.getCurrentUser().saveInBackground(e1 -> {
+                        if (e1 != null) {
+                            Toast.makeText(getContext(), "Unable to set Profile Pic", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         Glide.with(getContext())
                                 .load(toSave.getUrl())
                                 .circleCrop()
                                 .into(profile);
-                    }
+                    });
                 });
             }
         }
@@ -203,6 +230,5 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        timer.cancel();
     }
 }
