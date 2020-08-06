@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -27,6 +27,7 @@ import java.util.List;
 public class PopupHelper {
 
     private static PopupWindow popupWindow;
+    public static RelativeLayout backDim;
 
     public static void createPopup(Activity activity, Context context, boolean newPic) {
         ConstraintLayout container = activity.findViewById(R.id.home_container);
@@ -40,8 +41,21 @@ public class PopupHelper {
         // Position popup
         popupWindow = new PopupWindow(popup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
         popupWindow.showAtLocation(container, Gravity.CENTER, 0, 0);
+        backDim.setVisibility(View.VISIBLE);
         search.requestFocus();
-        close.setOnClickListener(unusedView -> popupWindow.dismiss());
+        close.setOnClickListener(unusedView -> {
+            popupWindow.dismiss();
+            if (backDim != null) {
+                backDim.setVisibility(View.GONE);
+            }
+        });
+
+        // If we dismiss the Popup, hide the background tint
+        popupWindow.setOnDismissListener(() -> {
+            if (backDim != null) {
+                backDim.setVisibility(View.GONE);
+            }
+        });
 
         List<ParseUser> results = new ArrayList<>();
         // Tell the adapter whether this adapter will need to handle saved pics(New Snap from ComposeFragment)
@@ -83,6 +97,10 @@ public class PopupHelper {
 
     public static void closePopup() {
         popupWindow.dismiss();
+        // Hide the background tint if we abruptly end the Fragment
+        if (backDim != null) {
+            backDim.setVisibility(View.GONE);
+        }
     }
 
     public static boolean isActive() {
