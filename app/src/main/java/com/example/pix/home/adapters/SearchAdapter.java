@@ -32,6 +32,7 @@ import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_TWO;
 import static com.example.pix.home.models.Chat.VISIBLE_ONE;
 import static com.example.pix.home.models.Chat.VISIBLE_TWO;
+import static com.parse.ParseObject.registerSubclass;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
@@ -125,9 +126,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     i.putExtra(CHAT, chat.getObjectId());
                     context.startActivity(i);
                 });
-                // Case where the Chat was already visible
-                i.putExtra(CHAT, chat.getObjectId());
-                context.startActivity(i);
             });
             ParseFile pic = user.getParseFile(USER_PROFILE_CODE);
             if (pic != null) {

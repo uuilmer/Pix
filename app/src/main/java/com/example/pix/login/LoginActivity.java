@@ -215,7 +215,8 @@ public class LoginActivity extends AppCompatActivity {
                         // We are done Authenticating Spotify
                         (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
                         authenticated = true;
-                        LoginActivity.loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", 1);
+                        MUSIC_FEATURE_ENABLED = 1;
+                        LoginActivity.loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", MUSIC_FEATURE_ENABLED);
                         LoginActivity.loginActivity.editor.commit();
                         if (enableFeature != null) {
                             enableFeature.setVisibility(View.GONE);
