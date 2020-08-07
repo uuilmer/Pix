@@ -78,7 +78,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // If we have disabled the Music feature, allow the USer to enable it
-        if (LoginActivity.MUSIC_FEATURE_ENABLED == 0) {
+        if (isOwner && LoginActivity.MUSIC_FEATURE_ENABLED == 0) {
             view.findViewById(R.id.profile_text_stream).setVisibility(View.GONE);
             Button authSpotify = view.findViewById(R.id.profile_auth_spotify);
             authSpotify.setVisibility(View.VISIBLE);
