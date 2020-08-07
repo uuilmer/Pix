@@ -32,7 +32,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
     public static byte MUSIC_FEATURE_ENABLED;
-    private static boolean loggedIn = false;
+    // Need to change this from ProfileFragment when we sign out
+    public static boolean loggedIn = false;
     protected static boolean authenticated = false;
     private static SpotifyAppRemote mSpotifyAppRemote;
     private final static int RECORD_VIDEO = 100;

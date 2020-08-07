@@ -142,11 +142,13 @@ public class ChatFragment extends Fragment {
             startActivityForResult(i, RESULT_LOAD_IMG);
         });
 
-        // Get this friend's profile pic
-        ParseFile profile;
+        // Get this friend's profile pic only if its not null
+        ParseFile profilePic;
         try {
-            profile = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
-            Glide.with(getActivity()).load(profile.getUrl()).circleCrop().into(ivProfile);
+            profilePic = friend.fetchIfNeeded().getParseFile(USER_PROFILE_CODE);
+            if (profilePic != null) {
+                Glide.with(getActivity()).load(profilePic.getUrl()).circleCrop().into(ivProfile);
+            }
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving more chats", Toast.LENGTH_SHORT).show();
         }

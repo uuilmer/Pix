@@ -141,6 +141,7 @@ public class ProfileFragment extends Fragment {
             (view.findViewById(R.id.profile_signout)).setOnClickListener(unusedView -> {
                 ParseUser.logOut();
                 Intent i = new Intent(getActivity(), LoginActivity.class);
+                LoginActivity.loggedIn = false;
                 getActivity().startActivity(i);
                 getActivity().finish();
             });
