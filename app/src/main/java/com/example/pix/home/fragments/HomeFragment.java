@@ -37,6 +37,8 @@ import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 public class HomeFragment extends Fragment {
 
     public static final int MAX_ALPHA = 255;
+    private ImageView profile;
+    private View savedView;
 
     public HomeFragment() {
     }
@@ -51,7 +53,9 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageView profile = view.findViewById(R.id.home_profile_icon);
+        this.savedView = view;
+
+        profile = view.findViewById(R.id.home_profile_icon);
         TextView pix = view.findViewById(R.id.tv_score);
 
         // Set the current Pix Score
@@ -157,5 +161,11 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        // Set the User profile picture
+        ParseFile image = ParseUser.getCurrentUser().getParseFile(USER_PROFILE_CODE);
+        if (image != null) {
+            Glide.with(savedView).load(image.getUrl()).circleCrop().into(profile);
+        }
     }
 }

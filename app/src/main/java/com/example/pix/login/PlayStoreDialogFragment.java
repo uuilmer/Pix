@@ -48,7 +48,9 @@ public class PlayStoreDialogFragment extends DialogFragment {
                     loginActivity.authenticated = true;
                     (loginActivity.findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
 
-                    loginActivity.MUSIC_FEATURE_ENABLED = false;
+                    loginActivity.MUSIC_FEATURE_ENABLED = 0;
+                    loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", 0);
+                    loginActivity.editor.commit();
                     loginActivity.checkIfDone();
                 });
         // Create the AlertDialog object and return it

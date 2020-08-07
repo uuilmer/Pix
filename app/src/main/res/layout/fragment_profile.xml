@@ -106,6 +106,19 @@
         android:text="STOP LISTENING"
         android:visibility="gone"/>
 
+    <Button
+        android:id="@+id/profile_auth_spotify"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="#4CAF50"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Authenticate with Spotify"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp"
+        android:visibility="gone"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

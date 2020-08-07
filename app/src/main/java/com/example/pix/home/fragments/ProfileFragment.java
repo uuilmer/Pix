@@ -78,8 +78,13 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // If we have disabled the Music feature, Hide the label for it
-        if (!LoginActivity.MUSIC_FEATURE_ENABLED) {
+        if (LoginActivity.MUSIC_FEATURE_ENABLED == 0) {
             view.findViewById(R.id.profile_text_stream).setVisibility(View.GONE);
+            Button authSpotify = view.findViewById(R.id.profile_auth_spotify);
+            authSpotify.setVisibility(View.VISIBLE);
+            authSpotify.setOnClickListener(unusedView -> {
+                LoginActivity.loginActivity.setupSpotify(false, authSpotify);
+            });
         }
         // Clicking back ends this fragment
         // Will need to figure out how to end with animation
@@ -172,7 +177,7 @@ public class ProfileFragment extends Fragment {
         pix.setText(Like.getPix(user) + "P");
 
         // Only make the MusicRoomFragment if this User has logged into Spotify
-        if (LoginActivity.MUSIC_FEATURE_ENABLED) {
+        if (LoginActivity.MUSIC_FEATURE_ENABLED == 1) {
             // Insert a MusicRoomFragment(Currently has no layout) to monitor this User's Spotify
             // and update their personal Musicroom accordingly
             ParseQuery<MusicRoom> q;

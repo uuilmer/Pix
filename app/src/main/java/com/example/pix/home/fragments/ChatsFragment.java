@@ -171,6 +171,10 @@ public class ChatsFragment extends Fragment {
         else chats.clear();
         try {
             Chat.getChatsInBackground(ParseUser.getCurrentUser(), 0, (objects, e) -> {
+                if (e != null) {
+                    System.out.println(e.getStackTrace());
+                    return;
+                }
                 chats.addAll(objects);
                 chatsAdapter.notifyDataSetChanged();
             });

@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,11 +30,14 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
-    public static boolean MUSIC_FEATURE_ENABLED = true;
-    private boolean loggedIn = false;
-    protected boolean authenticated = false;
+    public static byte MUSIC_FEATURE_ENABLED;
+    private static boolean loggedIn = false;
+    protected static boolean authenticated = false;
     private static SpotifyAppRemote mSpotifyAppRemote;
     private final static int RECORD_VIDEO = 100;
+    private final static String MY_PREFERENCES = "preferences";
+    protected SharedPreferences.Editor editor;
+    public static LoginActivity loginActivity;
 
     // We can access the Spotify Remote in later Activities
     public static SpotifyAppRemote getmSpotifyAppRemote() {
@@ -67,6 +72,13 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        loginActivity = this;
+
+        SharedPreferences preferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+
+        editor = preferences.edit();
+
+        MUSIC_FEATURE_ENABLED = (byte) preferences.getInt("MUSIC_FEATURE_ENABLED", 2);
 
         final EditText etUsername = findViewById(R.id.entered_username);
         final EditText etPassword = findViewById(R.id.entered_password);
@@ -128,7 +140,9 @@ public class LoginActivity extends AppCompatActivity {
                     loggedIn = true;
                     (findViewById(R.id.parse_container)).setVisibility(View.GONE);
                     checkIfDone();
-                    btnSpotify.requestFocus();
+                    if (MUSIC_FEATURE_ENABLED == 2) {
+                        btnSpotify.requestFocus();
+                    }
                 }
             });
         });
@@ -154,51 +168,68 @@ public class LoginActivity extends AppCompatActivity {
                 (findViewById(R.id.parse_container)).setVisibility(View.GONE);
                 checkIfDone();
             } catch (ParseException e) {
-                e.printStackTrace();
+                Toast.makeText(this, "Username is taken", Toast.LENGTH_SHORT).show();
             }
         });
 
         // When button is hit, create an AuthenticationRequest and jump to the Spotify-provided LoginActivity
-        btnSpotify.setOnClickListener(unusedView -> {
 
-            // If the USer doesn't have Spotify installed, let the USer decide to install it or disable the music feature
-            if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
-                PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
-                dialog.show(getSupportFragmentManager(), null);
-                return;
-            }
+        if (MUSIC_FEATURE_ENABLED == 0) {
+            authenticated = true;
+            btnSpotify.setVisibility(View.GONE);
+            checkIfDone();
+        } else if (MUSIC_FEATURE_ENABLED == 1) {
+            setupSpotify(true, null);
+        } else {
+            btnSpotify.setOnClickListener(unusedView -> {
+                setupSpotify(true, null);
+            });
+        }
+    }
 
-            // Set the connection parameters
-            ConnectionParams connectionParams =
-                    new ConnectionParams.Builder("cf5e6393a07f442ab4f22d05650071ec") // Client ID
-                            .setRedirectUri(REDIRECT_URI)
-                            .showAuthView(true)
-                            .build();
+    public void setupSpotify(boolean offerDisable, Button enableFeature) {
+        // If the USer doesn't have Spotify installed, let the USer decide to install it or disable the music feature
+        if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
+            PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
+            dialog.show(getSupportFragmentManager(), null);
+            return;
+        }
 
-            SpotifyAppRemote.connect(LoginActivity.this, connectionParams,
-                    new Connector.ConnectionListener() {
+        // Set the connection parameters
+        ConnectionParams connectionParams =
+                new ConnectionParams.Builder("cf5e6393a07f442ab4f22d05650071ec") // Client ID
+                        .setRedirectUri(REDIRECT_URI)
+                        .showAuthView(true)
+                        .build();
 
-                        @Override
-                        public void onConnected(SpotifyAppRemote spotifyAppRemote) {
-                            mSpotifyAppRemote = spotifyAppRemote;
+        SpotifyAppRemote.connect(LoginActivity.this, connectionParams,
+                new Connector.ConnectionListener() {
 
-                            // We are done Authenticating Spotify
-                            (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
-                            authenticated = true;
-                            checkIfDone();
+                    @Override
+                    public void onConnected(SpotifyAppRemote spotifyAppRemote) {
+                        mSpotifyAppRemote = spotifyAppRemote;
+
+                        // We are done Authenticating Spotify
+                        (findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+                        authenticated = true;
+                        LoginActivity.loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", 1);
+                        LoginActivity.loginActivity.editor.commit();
+                        if (enableFeature != null) {
+                            enableFeature.setVisibility(View.GONE);
+                            return;
                         }
+                        checkIfDone();
+                    }
 
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            // If we failed to connect to Spotify, chances are the User hasn't signed in yet
-                            Toast.makeText(LoginActivity.this, "Sign in with Spotify", Toast.LENGTH_SHORT).show();
-
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        if (offerDisable) {
                             // If we are not logged in to Spotify, give User the option to login or disable feature
                             PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true);
                             dialogFragment.show(getSupportFragmentManager(), null);
                         }
-                    });
-        });
+                    }
+                });
     }
 
     @Override
