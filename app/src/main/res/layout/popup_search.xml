@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFEBCA"
+    android:background="@drawable/rounded_corners"
+    android:backgroundTint="#93E696"
     android:orientation="vertical">
 
     <LinearLayout
@@ -32,7 +33,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/popup_rv"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_logo" />
     </ScrollView>
 
 </LinearLayout>

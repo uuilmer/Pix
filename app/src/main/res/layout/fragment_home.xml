@@ -64,4 +64,11 @@
             android:alpha="0.2" />
     </LinearLayout>
 
+    <RelativeLayout
+        android:id="@+id/bac_dim_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

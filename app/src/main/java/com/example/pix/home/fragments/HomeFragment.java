@@ -7,8 +7,10 @@ import android.transition.Explode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -100,10 +102,13 @@ public class HomeFragment extends Fragment {
 
         ImageView svChats = view.findViewById(R.id.home_search_user);
 
+
+        // Set the RelativeLayout we will use as a background dimmer for the Popup
+        RelativeLayout dimmer = view.findViewById(R.id.bac_dim_layout);
+        PopupHelper.backDim = dimmer;
         // Create popup to search for friends
         svChats.setOnClickListener(unusedView -> {
             PopupHelper.createPopup(getActivity(), getContext(), false);
-
         });
 
         List<Fragment> fragments = new ArrayList<>();
