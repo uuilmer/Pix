@@ -7,7 +7,6 @@ import android.transition.Explode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -24,15 +23,11 @@ import com.example.pix.R;
 import com.example.pix.home.adapters.PagerAdapter;
 import com.example.pix.home.models.Like;
 import com.example.pix.home.utils.PopupHelper;
-import com.example.pix.login.LoginActivity;
 import com.parse.ParseFile;
 import com.parse.ParseUser;
-import com.spotify.android.appremote.api.SpotifyAppRemote;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 

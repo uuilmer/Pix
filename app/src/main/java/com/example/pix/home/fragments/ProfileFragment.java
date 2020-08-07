@@ -35,8 +35,6 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.pix.chat.activities.FriendActivity.FRIEND_FRAGMENT_TAG;

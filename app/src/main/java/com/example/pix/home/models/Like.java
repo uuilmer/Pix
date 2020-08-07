@@ -1,8 +1,5 @@
 package com.example.pix.home.models;
 
-import android.widget.Toast;
-
-import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;

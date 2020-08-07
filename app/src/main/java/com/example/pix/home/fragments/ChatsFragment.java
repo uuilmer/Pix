@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,19 +18,14 @@ import com.baoyz.widget.PullRefreshLayout;
 import com.example.pix.R;
 import com.example.pix.home.adapters.ChatsAdapter;
 import com.example.pix.home.models.Chat;
-import com.example.pix.home.models.Message;
 import com.example.pix.home.utils.EndlessRecyclerViewScrollListener;
 import com.parse.ParseException;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-
-import static com.example.pix.home.models.Chat.CHAT;
 
 public class ChatsFragment extends Fragment {
 

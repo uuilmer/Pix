@@ -1,10 +1,5 @@
 package com.example.pix.home.activities;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.RemoteInput;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,14 +9,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.RemoteInput;
+
 import com.example.pix.R;
 import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.fragments.HomeFragment;
 import com.example.pix.home.models.Message;
 import com.parse.ParseException;
-import com.spotify.android.appremote.api.SpotifyAppRemote;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 

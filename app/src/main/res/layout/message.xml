@@ -47,8 +47,8 @@
 
             <ImageView
                 android:id="@+id/message_content_pic"
-                android:layout_width="80dp"
-                android:layout_height="80dp" />
+                android:layout_width="160dp"
+                android:layout_height="160dp" />
 
             <LinearLayout
                 android:id="@+id/message_snap"

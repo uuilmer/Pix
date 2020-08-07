@@ -22,7 +22,6 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import java.util.List;
 
@@ -30,9 +29,6 @@ import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.USER_ONE;
 import static com.example.pix.home.models.Chat.USER_PROFILE_CODE;
 import static com.example.pix.home.models.Chat.USER_TWO;
-import static com.example.pix.home.models.Chat.VISIBLE_ONE;
-import static com.example.pix.home.models.Chat.VISIBLE_TWO;
-import static com.parse.ParseObject.registerSubclass;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 

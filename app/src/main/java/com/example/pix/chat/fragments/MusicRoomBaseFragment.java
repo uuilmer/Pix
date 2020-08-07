@@ -1,6 +1,5 @@
 package com.example.pix.chat.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,16 +14,12 @@ import androidx.fragment.app.Fragment;
 import com.example.pix.R;
 import com.example.pix.chat.models.MusicRoom;
 import com.example.pix.chat.models.Song;
-import com.example.pix.home.models.Like;
 import com.example.pix.login.LoginActivity;
 import com.jackandphantom.androidlikebutton.AndroidLikeButton;
 import com.parse.ParseException;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.skyfishjy.library.RippleBackground;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-import com.spotify.protocol.client.Subscription;
-import com.spotify.protocol.types.PlayerState;
 
 import java.util.Timer;
 

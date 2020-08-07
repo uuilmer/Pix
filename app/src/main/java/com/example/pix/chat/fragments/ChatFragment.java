@@ -2,10 +2,7 @@ package com.example.pix.chat.fragments;
 
 import android.Manifest;
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -72,10 +69,8 @@ public class ChatFragment extends Fragment {
     private ParseFile newPic;
     private MessageAdapter messageAdapter;
     private List<Message> messages;
-    private RecyclerView rvMessages;
     private EditText etText;
     private Chat chat;
-    private ImageView ivPictures;
     private Date lastMessage;
     private LinearLayoutManager manager;
 
@@ -138,13 +133,13 @@ public class ChatFragment extends Fragment {
             getActivity().finish();
         }
 
-        rvMessages = view.findViewById(R.id.chat_rv);
+        RecyclerView rvMessages = view.findViewById(R.id.chat_rv);
         ImageView ivProfile = view.findViewById(R.id.chat_profile);
         TextView tvName = view.findViewById(R.id.chat_name);
         ImageView ivBack = view.findViewById(R.id.chat_back);
         ImageView ivCamera = view.findViewById(R.id.chat_camera);
         etText = view.findViewById(R.id.chat_text);
-        ivPictures = view.findViewById(R.id.chat_pictures);
+        ImageView ivPictures = view.findViewById(R.id.chat_pictures);
         ivNewPic = view.findViewById(R.id.chat_image);
 
         ComposeFragment composeFragment = new ComposeFragment();

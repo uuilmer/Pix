@@ -1,21 +1,12 @@
 package com.example.pix.home.fragments;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-
 import android.os.Environment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -29,9 +20,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
+
 import com.example.pix.R;
 import com.example.pix.chat.fragments.ChatFragment;
-import com.example.pix.chat.activities.FriendActivity;
 import com.example.pix.home.activities.HomeActivity;
 import com.example.pix.home.utils.CameraPreview;
 import com.example.pix.home.utils.PopupHelper;
@@ -39,7 +34,6 @@ import com.parse.ParseFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
