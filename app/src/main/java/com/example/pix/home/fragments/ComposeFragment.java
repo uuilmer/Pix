@@ -22,6 +22,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -51,6 +54,7 @@ public class ComposeFragment extends Fragment {
     private Button take;
     private MediaRecorder recorder;
     private long timeclicked;
+    private Timer startRecord;;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -148,14 +152,21 @@ public class ComposeFragment extends Fragment {
         File path = Environment.getExternalStorageDirectory();
         File video = new File(path, "/" + "video.mp4");
 
-        Timer startRecord = new Timer();
+        Animation animation = new AlphaAnimation(1, 0);
+        animation.setDuration(500);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setRepeatCount(Animation.INFINITE);
+        animation.setRepeatMode(Animation.REVERSE);
+
         // When we touch the take snap content icon...
         take.setOnTouchListener((unusedView, motionEvent) -> {
             // If this is us clicking down...
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 // Note the current time
                 timeclicked = System.currentTimeMillis();
+                take.startAnimation(animation);
                 // In 200 milliseconds(MAX_CLICK_DURATION) start recording...
+                startRecord = new Timer();
                 startRecord.schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -181,6 +192,8 @@ public class ComposeFragment extends Fragment {
                     }
                 }, MAX_CLICK_DURATION);
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                // Stop blinking the Take button
+                take.clearAnimation();
                 // If it hasn't been 200 millis yet, and we just let go of the take button, it was a single click..
                 if (System.currentTimeMillis() - timeclicked < MAX_CLICK_DURATION) {
                     // We cancel the video, take a pic and call our callback
