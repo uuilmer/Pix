@@ -16,10 +16,12 @@ public class PlayStoreDialogFragment extends DialogFragment {
 
     private LoginActivity loginActivity;
     private boolean isSpotifyInstalled;
+    private boolean isCurrentlyAtLogin;
 
-    public PlayStoreDialogFragment(LoginActivity loginActivity, boolean isSpotifyInstalled) {
+    public PlayStoreDialogFragment(LoginActivity loginActivity, boolean isSpotifyInstalled, boolean isCurrentlyAtLogin) {
         this.loginActivity = loginActivity;
         this.isSpotifyInstalled = isSpotifyInstalled;
+        this.isCurrentlyAtLogin = isCurrentlyAtLogin;
     }
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -42,16 +44,19 @@ public class PlayStoreDialogFragment extends DialogFragment {
                     intent.setPackage("com.android.vending");
                     startActivity(intent);
                 })
-                .setNegativeButton("Disable it", (dialog, id) -> {
+                .setNegativeButton(isCurrentlyAtLogin ? "Disable it" : "Cancel", (dialog, id) -> {
                     // If we choose to disable the Music feature, allow us to move on from the LoginActivity but mark
                     // the MUSIC_FEATURE_ENABLED as false
-                    loginActivity.authenticated = true;
-                    (loginActivity.findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
+                    // Only save a 0 if it isn't already a 0 (If we used button to enable from ProfileFragment it is definitely a 0
+                    if (isCurrentlyAtLogin) {
+                        loginActivity.authenticated = true;
+                        (loginActivity.findViewById(R.id.auth_spotify)).setVisibility(View.GONE);
 
-                    loginActivity.MUSIC_FEATURE_ENABLED = 0;
-                    loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", 0);
-                    loginActivity.editor.commit();
-                    loginActivity.checkIfDone();
+                        loginActivity.MUSIC_FEATURE_ENABLED = 0;
+                        loginActivity.editor.putInt("MUSIC_FEATURE_ENABLED", 0);
+                        loginActivity.editor.commit();
+                        loginActivity.checkIfDone();
+                    }
                 });
         // Create the AlertDialog object and return it
         return builder.create();

@@ -3,6 +3,7 @@ package com.example.pix.login;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.content.Context;
@@ -179,19 +180,20 @@ public class LoginActivity extends AppCompatActivity {
             btnSpotify.setVisibility(View.GONE);
             checkIfDone();
         } else if (MUSIC_FEATURE_ENABLED == 1) {
-            setupSpotify(true, null);
+            setupSpotify(this, true, null, true, getSupportFragmentManager());
         } else {
             btnSpotify.setOnClickListener(unusedView -> {
-                setupSpotify(true, null);
+                setupSpotify(this, true, null, true, getSupportFragmentManager());
             });
         }
     }
 
-    public void setupSpotify(boolean offerDisable, Button enableFeature) {
+    public void setupSpotify(Context context, boolean offerDisable, Button enableFeature, boolean isCurrentlyAtLogin, FragmentManager fragmentManager) {
         // If the USer doesn't have Spotify installed, let the USer decide to install it or disable the music feature
         if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
-            PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false);
-            dialog.show(getSupportFragmentManager(), null);
+            PlayStoreDialogFragment dialog = new PlayStoreDialogFragment(this, false, isCurrentlyAtLogin);
+            // Use the correct fragment manager: Login screen vs ProfileFragment
+            dialog.show(fragmentManager, null);
             return;
         }
 
@@ -216,6 +218,7 @@ public class LoginActivity extends AppCompatActivity {
                         LoginActivity.loginActivity.editor.commit();
                         if (enableFeature != null) {
                             enableFeature.setVisibility(View.GONE);
+                            Toast.makeText(context, "Relaunch the App to take effect", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         checkIfDone();
@@ -223,11 +226,9 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Throwable throwable) {
-                        if (offerDisable) {
-                            // If we are not logged in to Spotify, give User the option to login or disable feature
-                            PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true);
-                            dialogFragment.show(getSupportFragmentManager(), null);
-                        }
+                        // If we are not logged in to Spotify, give User the option to login or disable feature
+                        PlayStoreDialogFragment dialogFragment = new PlayStoreDialogFragment(LoginActivity.this, true, isCurrentlyAtLogin);
+                        dialogFragment.show(fragmentManager, null);
                     }
                 });
     }

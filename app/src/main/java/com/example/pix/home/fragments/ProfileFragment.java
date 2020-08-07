@@ -77,13 +77,13 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // If we have disabled the Music feature, Hide the label for it
+        // If we have disabled the Music feature, allow the USer to enable it
         if (LoginActivity.MUSIC_FEATURE_ENABLED == 0) {
             view.findViewById(R.id.profile_text_stream).setVisibility(View.GONE);
             Button authSpotify = view.findViewById(R.id.profile_auth_spotify);
             authSpotify.setVisibility(View.VISIBLE);
             authSpotify.setOnClickListener(unusedView -> {
-                LoginActivity.loginActivity.setupSpotify(false, authSpotify);
+                LoginActivity.loginActivity.setupSpotify(getContext(), false, authSpotify, false, getParentFragmentManager());
             });
         }
         // Clicking back ends this fragment
@@ -184,22 +184,27 @@ public class ProfileFragment extends Fragment {
             q = ParseQuery.getQuery(MusicRoom.class);
             q.whereEqualTo("user", user);
 
+            MusicRoom musicRoom = null;
             try {
-                MusicRoom musicRoom = q.getFirst();
-                if (musicRoom == null) {
-                    musicRoom = new MusicRoom();
-                    musicRoom.setUser(user);
-                    musicRoom.save();
-                }
-
-                if (isOwner) {
-                    getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
-                } else {
-                    getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
-                }
+                musicRoom = q.getFirst();
             } catch (ParseException e) {
                 e.printStackTrace();
-                Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
+            }
+            if (musicRoom == null) {
+                musicRoom = new MusicRoom();
+                musicRoom.setUser(user);
+                try {
+                    musicRoom.save();
+                } catch (ParseException e) {
+                    Toast.makeText(getContext(), "Error Setting up Streaming feature!", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
+
+            if (isOwner) {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomOwnerFragment(musicRoom, user)).commit();
+            } else {
+                getChildFragmentManager().beginTransaction().add(R.id.profile_musicroom, new MusicRoomListenerFragment(musicRoom, user, q)).commit();
             }
         }
     }
