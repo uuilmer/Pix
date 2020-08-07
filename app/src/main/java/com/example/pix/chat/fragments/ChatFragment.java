@@ -1,11 +1,15 @@
 package com.example.pix.chat.fragments;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.transition.Explode;
 import android.util.Log;
@@ -21,6 +25,9 @@ import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -49,6 +56,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.pix.home.activities.HomeActivity.CHANNEL_ID;
+import static com.example.pix.home.activities.HomeActivity.KEY_TEXT_REPLY;
+import static com.example.pix.home.activities.HomeActivity.REPLY_CODE;
 import static com.example.pix.home.models.Chat.CHAT;
 import static com.example.pix.home.models.Chat.CREATED_AT;
 import static com.example.pix.home.models.Chat.RECIPIENT;
@@ -82,14 +92,51 @@ public class ChatFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERM);
+
+        // This is what gives up the Bundle containing the reply the User has entered
+        Bundle remoteInput = RemoteInput.getResultsFromIntent(getActivity().getIntent());
 
         // Use the objectId we passed to get this Chat
         String chatId = getActivity().getIntent().getStringExtra(CHAT);
         chat = Chat.getChat(chatId);
 
+        ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
+
+        if (remoteInput != null) {
+            // Get the reply that was entered
+            String inputString = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString();
+
+            // Save as a new message
+            Message newMessage = new Message();
+            newMessage.setText(inputString);
+            newMessage.setChat(chat);
+            newMessage.setFrom(ParseUser.getCurrentUser());
+            newMessage.setTo(friend);
+            try {
+                newMessage.save();
+            } catch (ParseException e) {
+                Toast.makeText(getContext(), "Error replying", Toast.LENGTH_SHORT).show();
+            }
+
+            // Replace the current notification with one that just lets the User know the message was sent
+            Notification repliedNotification =
+                    new Notification.Builder(getContext(), CHANNEL_ID)
+                            .setSmallIcon(
+                                    android.R.drawable.ic_dialog_info)
+                            .setContentText("Reply received")
+                            .build();
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getContext());
+            notificationManager.notify(REPLY_CODE, repliedNotification);
+            // End this Activity since this is a reply from outside the app
+            getActivity().finish();
+        }
 
         rvMessages = view.findViewById(R.id.chat_rv);
         ImageView ivProfile = view.findViewById(R.id.chat_profile);
@@ -115,8 +162,6 @@ public class ChatFragment extends Fragment {
         });
 
         ivBack.setOnClickListener(unusedView -> getActivity().finish());
-
-        ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
 
         if (newPic != null) {
             newPic.saveInBackground((SaveCallback) e -> {

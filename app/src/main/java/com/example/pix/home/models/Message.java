@@ -1,8 +1,10 @@
 package com.example.pix.home.models;
 
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.io.File;
@@ -20,6 +22,18 @@ public class Message extends ParseObject {
 
     public Message() {
     }
+
+    public static Message getNewestMessage() {
+        ParseQuery<Message> q = ParseQuery.getQuery(Message.class);
+        q.whereEqualTo(RECIPIENT, ParseUser.getCurrentUser());
+        q.orderByDescending("createdAt");
+        try {
+            return q.getFirst();
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
 
     public Chat getChat() {
         return (Chat) getParseObject(CHAT);
@@ -46,7 +60,7 @@ public class Message extends ParseObject {
     }
 
     public Date getTime() {
-        return getUpdatedAt();
+        return getCreatedAt();
     }
 
     public String getText() {
