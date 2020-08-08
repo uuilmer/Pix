@@ -74,6 +74,11 @@ public class PopupHelper {
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
                 ParseQuery<ParseUser> q = ParseQuery.getQuery(ParseUser.class);
                 q.whereStartsWith("username", s);
                 q.findInBackground((objects, e) -> {
@@ -85,11 +90,6 @@ public class PopupHelper {
                     results.addAll(objects);
                     adapter.notifyDataSetChanged();
                 });
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
                 return false;
             }
         });

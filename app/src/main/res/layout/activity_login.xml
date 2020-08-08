@@ -77,7 +77,8 @@
             android:layout_gravity="center"
             android:backgroundTint="#4CAF50"
             android:text="Authenticate with Spotify"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </LinearLayout>

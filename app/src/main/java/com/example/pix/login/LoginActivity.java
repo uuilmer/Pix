@@ -38,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     private final static String MY_PREFERENCES = "preferences";
     protected SharedPreferences.Editor editor;
     public static LoginActivity loginActivity;
+    protected Button btnSpotify;
 
     // We can access the Spotify Remote in later Activities
     public static SpotifyAppRemote getmSpotifyAppRemote() {
@@ -84,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
         final EditText etPassword = findViewById(R.id.entered_password);
 
         Button btnSignup = findViewById(R.id.parse_signup);
-        Button btnSpotify = findViewById(R.id.auth_spotify);
+        btnSpotify = findViewById(R.id.auth_spotify);
 
         // If we hit enter from the username, go to the password...
         etUsername.setOnKeyListener((view, i, keyEvent) -> {
@@ -181,6 +182,7 @@ public class LoginActivity extends AppCompatActivity {
         } else if (MUSIC_FEATURE_ENABLED == 1) {
             setupSpotify(this, true, null, true, getSupportFragmentManager());
         } else {
+            btnSignup.setVisibility(View.VISIBLE);
             btnSpotify.setOnClickListener(unusedView -> {
                 setupSpotify(this, true, null, true, getSupportFragmentManager());
             });

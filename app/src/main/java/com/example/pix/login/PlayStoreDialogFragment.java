@@ -28,6 +28,10 @@ public class PlayStoreDialogFragment extends DialogFragment {
         // Show the correct message
         builder.setMessage("You need to install & login to Spotify for the Music feature.")
                 .setPositiveButton(isSpotifyInstalled ? "Login" : "Install it", (dialog, id) -> {
+                    // Reveal the Spotify Auth Button
+                    loginActivity.btnSpotify.setVisibility(View.VISIBLE);
+                    // When we come back from login in, let the User press the Spotify Button to Authencticate
+                    loginActivity.btnSpotify.setOnClickListener(view -> loginActivity.setupSpotify(loginActivity, true, null, true, loginActivity.getSupportFragmentManager()));
                     // If we haven installed Spotify, launch Spotify to login
                     if (isSpotifyInstalled) {
                         Intent launchIntent = loginActivity.getPackageManager().getLaunchIntentForPackage("com.spotify.music");

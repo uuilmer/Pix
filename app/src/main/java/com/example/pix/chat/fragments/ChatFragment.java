@@ -73,6 +73,7 @@ public class ChatFragment extends Fragment {
     private Chat chat;
     private Date lastMessage;
     private LinearLayoutManager manager;
+    private ParseUser friend;
 
     public ChatFragment() {
     }
@@ -101,7 +102,7 @@ public class ChatFragment extends Fragment {
         String chatId = getActivity().getIntent().getStringExtra(CHAT);
         chat = Chat.getChat(chatId);
 
-        ParseUser friend = chat.getFriend(ParseUser.getCurrentUser());
+        friend = chat.getFriend(ParseUser.getCurrentUser());
 
         if (remoteInput != null) {
             // Get the reply that was entered
@@ -154,6 +155,10 @@ public class ChatFragment extends Fragment {
                     .beginTransaction()
                     .replace(R.id.friend_container, composeFragment)
                     .commit();
+        });
+
+        view.findViewById(R.id.chat_send).setOnClickListener(unusedView -> {
+            sendMessage();
         });
 
         ivBack.setOnClickListener(unusedView -> getActivity().finish());
@@ -250,29 +255,15 @@ public class ChatFragment extends Fragment {
             rvMessages.addOnScrollListener(scroll);
             manager.scrollToPosition(0);
 
+            etText.setOnFocusChangeListener((unusedView, b) -> {
+                if (b) {
+                    manager.scrollToPosition(0);
+                }
+            });
             // When we press enter, save this text as a new Message within this Chat and scroll to the latest message
             etText.setOnKeyListener((unusedView, i, keyEvent) -> {
                 if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER) {
-                    // Create new message
-                    Message newMessage = new Message();
-                    newMessage.setText(etText.getText().toString());
-                    newMessage.setFrom(ParseUser.getCurrentUser());
-                    newMessage.setTo(friend);
-                    newMessage.setChat(chat);
-                    if (newPic != null) {
-                        // Case where we need to save a picture to DB first
-                        newPic.saveInBackground((SaveCallback) e -> {
-                            if (e != null) {
-                                Toast.makeText(getContext(), "Error saving picture", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                            newMessage.setPic(newPic);
-                            saveMessage(newMessage);
-                        });
-                    } else {
-                        // Case where there is no picture
-                        saveMessage(newMessage);
-                    }
+                    sendMessage();
                     return true;
                 }
                 return false;
@@ -323,6 +314,33 @@ public class ChatFragment extends Fragment {
 
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Error retrieving messages", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendMessage() {
+        if (etText.getText().toString().length() == 0 && newPic == null) {
+            Toast.makeText(getContext(), "Empty Message", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Create new message
+        Message newMessage = new Message();
+        newMessage.setText(etText.getText().toString());
+        newMessage.setFrom(ParseUser.getCurrentUser());
+        newMessage.setTo(friend);
+        newMessage.setChat(chat);
+        if (newPic != null) {
+            // Case where we need to save a picture to DB first
+            newPic.saveInBackground((SaveCallback) e -> {
+                if (e != null) {
+                    Toast.makeText(getContext(), "Error saving picture", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                newMessage.setPic(newPic);
+                saveMessage(newMessage);
+            });
+        } else {
+            // Case where there is no picture
+            saveMessage(newMessage);
         }
     }
 
