@@ -179,14 +179,14 @@ public class LoginActivity extends AppCompatActivity {
             authenticated = true;
             btnSpotify.setVisibility(View.GONE);
             checkIfDone();
+            return;
         } else if (MUSIC_FEATURE_ENABLED == 1) {
             setupSpotify(this, true, null, true, getSupportFragmentManager());
-        } else {
-            btnSignup.setVisibility(View.VISIBLE);
-            btnSpotify.setOnClickListener(unusedView -> {
-                setupSpotify(this, true, null, true, getSupportFragmentManager());
-            });
         }
+        btnSpotify.setVisibility(View.VISIBLE);
+        btnSpotify.setOnClickListener(unusedView -> {
+            setupSpotify(this, true, null, true, getSupportFragmentManager());
+        });
     }
 
     public void setupSpotify(Context context, boolean offerDisable, Button enableFeature, boolean isCurrentlyAtLogin, FragmentManager fragmentManager) {
