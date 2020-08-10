@@ -8,10 +8,9 @@
 
 ## Overview
 ### Description
-Client to authenticate with both Parse Server and Spotify API so that users can message each other but also listen to music together.
+Client to authenticate with both Parse Server and Spotify API so that users can message each other and also listen to music together.
 
 ### App Evaluation
-[Evaluation of your app across the following attributes]
 - **Category:** Social/Entertainment
 - **Mobile:** Cannot message on Spotify nor play music on messenger alone.
 - **Story:** Allows users to listen to music together.
@@ -54,16 +53,17 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
 * Chat
     * User can chat with a friend
     * Can enter Music room for this friend
-* Music room
-    * User can set the current song
-    * Friend would also see this song playing
+* Profile
+    * Includes the Musicroom
+    * User can start streaming
+    * User can view friends' profile screens and listen to their streams
 
 ### 3. Navigation
 
 **Tab Navigation** (Tab to Screen)
 
 * Friends List
-* Search user (Potentially)
+* Search user (Became a Fragment)
 
 **Flow Navigation** (Screen to Screen)
 
@@ -71,19 +71,16 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
     *  => Chats overview
 * Chats overview
     *  => Chat
+    *  => My Profile
 * Chat
     *  => Chat overview
-    *  => Music room
+    *  => Profile(Including Musicroom)
 * Music room
     *  => Chat
+    *  => Chats overview
 
 ## Wireframes
-[Add picture of your hand sketched wireframes in this section]
 <img src="wireframe.jpg" width=600>
-
-### [BONUS] Digital Wireframes & Mockups
-
-### [BONUS] Interactive Prototype
 
 ## Schema 
 ### Models
@@ -94,18 +91,30 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
    | objectId      | String   | unique id |
    | username        | String| name |
    | password         | String     | security |
-   | image       | File   | profile picture |
-   | likes | Number   | Number of likes user has recieved |
+   | profile       | File   | profile picture |
    | createdAt     | DateTime | date when post is created (default field) |
    | updatedAt     | DateTime | date when post is last updated (default field) |
    
-   #### Friendship
+   #### Chat
 
    | Property      | Type     | Description |
    | ------------- | -------- | ------------|
    | objectId      | String   | unique id |
    | user1        | Pointer to User | first of 2 friends |
    | user2        | Pointer to User | second of 2 friends |
+   | status        | Number   | 0 (Read last message) or 1 (Hasn't read last message)  |
+   | visibleOne        | Boolean   | Is this Chat visible to userOne?  |
+   | visibleTwo        | Boolean   | Is this Chat visible to userTwo?  |
+   | createdAt     | DateTime | date when post is created (default field) |
+   | updatedAt     | DateTime | date when post is last updated (default field) |
+   
+   #### Like
+
+   | Property      | Type     | Description |
+   | ------------- | -------- | ------------|
+   | objectId      | String   | unique id |
+   | streamer        | Pointer to User | The User who's Musicroom was liked |
+   | listener | Pointer to User | The User who made the Like |
    | createdAt     | DateTime | date when post is created (default field) |
    | updatedAt     | DateTime | date when post is last updated (default field) |
    
@@ -114,10 +123,12 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
    | Property      | Type     | Description |
    | ------------- | -------- | ------------|
    | objectId      | String   | unique id |
+   | chat        | Pointer to Chat | Chat that sent this message |
    | sender        | Pointer to User | User who sent the message |
    | recipient        | Pointer to User | User who got the message |
    | messageText | String | Message body |
    | messageImage | File | Message picture |
+   | isSnap | Boolean | Determines if the app will allow a User to view this message twice |
    | createdAt     | DateTime | date when post is created (default field) |
    | updatedAt     | DateTime | date when post is last updated (default field) |
    
@@ -126,11 +137,8 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
    | Property      | Type     | Description |
    | ------------- | -------- | ------------|
    | objectId      | String   | unique id |
-   | location        | String | where to get the song |
-   | title        | String | title of Song |
-   | artist | String | artist of Song |
-   | album | String | name of album |
-   | albumCover | File | image of album |
+   | uri        | String | the URI that Spotify can use to play this Song |
+   | isPlaying | Boolean | has the streamer paused the Song? |
    | createdAt     | DateTime | date when post is created (default field) |
    | updatedAt     | DateTime | date when post is last updated (default field) |
    
@@ -140,9 +148,7 @@ Client to authenticate with both Parse Server and Spotify API so that users can 
    | ------------- | -------- | ------------|
    | objectId      | String   | unique id |
    | currentSong        | Pointer to Song | currently playing song |
-   | nextSong        | Pointer to Song | next song |
-   | friendship | Pointer to Friendship | two people that are in this room |
-   | timeLastStart | DateTime | time last song started |
+   | user | Pointer to User | The owner of this room |
    | createdAt     | DateTime | date when post is created (default field) |
    | updatedAt     | DateTime | date when post is last updated (default field) |
    
