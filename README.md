@@ -10,6 +10,9 @@
 ### Description
 Client to authenticate with both Parse Server and Spotify API so that users can message each other and also listen to music together.
 
+### Demonstration
+https://drive.google.com/file/d/1blxJUg91iA5mZJhTbzhiprdbPH03sipu/view?usp=sharing
+
 ### App Evaluation
 - **Category:** Social/Entertainment
 - **Mobile:** Cannot message on Spotify nor play music on messenger alone.
